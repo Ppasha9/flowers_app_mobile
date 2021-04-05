@@ -375,7 +375,10 @@ class _CartScreenState extends State<CartScreen> {
     return Scaffold(
       backgroundColor: Color(0xFFFFFBFF),
       appBar: _getAppBar(context),
-      bottomNavigationBar: getNavigationBar(context),
+      bottomNavigationBar: getNavigationBar(
+        context,
+        curScreen: NavigationScreens.CART_SCREEN,
+      ),
       body: _getBody(context),
     );
   }

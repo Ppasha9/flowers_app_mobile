@@ -136,7 +136,10 @@ class AccountScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Color(0xFFFFFBFF),
       appBar: _getAppBar(context),
-      bottomNavigationBar: getNavigationBar(context),
+      bottomNavigationBar: getNavigationBar(
+        context,
+        curScreen: NavigationScreens.SIGNIN_SCREEN,
+      ),
       body: SingleChildScrollView(
         child: Column(
           children: <Widget>[

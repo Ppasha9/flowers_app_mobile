@@ -5,6 +5,15 @@ import 'package:flowers_app/screens/home/home.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+enum NavigationScreens {
+  HOME_SCREEN,
+  CATALOG_SCREEN,
+  CART_SCREEN,
+  LIKE_SCREEN,
+  SIGNIN_SCREEN,
+  ANOTHER_SCREEN
+}
+
 List<BottomNavigationBarItem> getNavBarItems(BuildContext context) {
   return <BottomNavigationBarItem>[
     BottomNavigationBarItem(
@@ -30,7 +39,10 @@ List<BottomNavigationBarItem> getNavBarItems(BuildContext context) {
   ];
 }
 
-Widget getNavigationBar(BuildContext context) {
+Widget getNavigationBar(
+  BuildContext context, {
+  NavigationScreens curScreen = NavigationScreens.ANOTHER_SCREEN,
+}) {
   return Container(
     height: MediaQuery.of(context).size.height / 12,
     child: BottomNavigationBar(
@@ -40,6 +52,10 @@ Widget getNavigationBar(BuildContext context) {
       backgroundColor: Color(0xFFFFFFFF),
       items: getNavBarItems(context),
       onTap: (index) {
+        if (curScreen.index == index) {
+          return;
+        }
+
         switch (index) {
           case 0:
             Navigator.of(context).push(

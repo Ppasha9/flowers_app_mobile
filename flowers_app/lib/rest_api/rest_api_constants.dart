@@ -1,6 +1,6 @@
 class REST_API_CONSTANTS {
-  // static const String HOST = "http://192.168.0.105:8080";
-  static const String HOST = "https://lavanda-test-server.herokuapp.com";
+  static const String HOST = "http://192.168.0.104:8080";
+  // static const String HOST = "https://lavanda-test-server.herokuapp.com";
   static const String PRODUCT_ROOT_URL = "$HOST/api/product";
   static const String CATEGORY_ROOT_URL = "$HOST/api/category";
   static const String AUTH_ROOT_URL = "$HOST/api/auth";

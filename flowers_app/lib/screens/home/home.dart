@@ -226,7 +226,10 @@ class HomeScreen extends StatelessWidget {
           )
         ],
       ),
-      bottomNavigationBar: getNavigationBar(context),
+      bottomNavigationBar: getNavigationBar(
+        context,
+        curScreen: NavigationScreens.HOME_SCREEN,
+      ),
     );
   }
 }

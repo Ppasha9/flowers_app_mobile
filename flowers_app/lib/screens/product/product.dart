@@ -4,6 +4,7 @@ import 'package:flowers_app/languages/constants.dart';
 import 'package:flowers_app/rest_api/rest_api_cart.dart';
 import 'package:flowers_app/rest_api/rest_api_product.dart';
 import 'package:flowers_app/screens/account/signin.dart';
+import 'package:flowers_app/screens/cart/cart.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -101,7 +102,13 @@ class _ProductScreenState extends State<ProductScreen> {
 
     return RaisedButton(
       color: Color(0xFFC9C9C9),
-      onPressed: _isAddedToCart ? null : () => _addProductToCart(context),
+      onPressed: _isAddedToCart
+          ? () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (BuildContext context) => CartScreen(),
+                ),
+              )
+          : () => _addProductToCart(context),
       child: Container(
         width: MediaQuery.of(context).size.width / 1.7,
         alignment: Alignment.center,
