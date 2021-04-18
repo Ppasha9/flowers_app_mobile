@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:orlove_app/constants.dart';
+import 'package:orlove_app/screens/signup/signup_screen.dart';
 
 class SignInInputForms extends StatefulWidget {
   @override
@@ -23,7 +24,7 @@ class _SignInInputFormsState extends State<SignInInputForms> {
         fontWeight: FontWeight.w600,
       ),
       decoration: InputDecoration(
-        labelText: 'Почта или номер телефона',
+        labelText: 'Почта или номер телефона*',
         labelStyle: TextStyle(
           color: ProjectConstants.APP_FONT_COLOR,
           fontFamily: ProjectConstants.APP_FONT_FAMILY,
@@ -74,7 +75,7 @@ class _SignInInputFormsState extends State<SignInInputForms> {
       ),
       obscureText: true,
       decoration: InputDecoration(
-        labelText: 'Пароль',
+        labelText: 'Пароль*',
         labelStyle: TextStyle(
           color: ProjectConstants.APP_FONT_COLOR,
           fontFamily: ProjectConstants.APP_FONT_FAMILY,
@@ -163,7 +164,13 @@ class _SignInInputFormsState extends State<SignInInputForms> {
               height: 45,
             ),
             GestureDetector(
-              onTap: () {},
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (ctx) => SignupScreen(),
+                  ),
+                );
+              },
               child: Center(
                 child: Text(
                   'Зарегистрироваться',
