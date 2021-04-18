@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flowers_app/screens/account/signup.dart';
+import 'package:flowers_app/screens/catalog/catalog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -19,7 +20,8 @@ class _SplashScreenState extends State<SplashScreen> {
       Duration(seconds: 4),
       () => Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (BuildContext context) => HomeScreen(),
+          builder: (BuildContext context) => CatalogScreen(),
+          //builder: (BuildContext context) => HomeScreen(),
           //builder: (BuildContext context) => SignupScreen(),
         ),
       ),
