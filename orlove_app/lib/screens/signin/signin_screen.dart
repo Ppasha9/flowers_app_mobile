@@ -133,7 +133,6 @@ class SignInScreen extends StatelessWidget {
     return SingleChildScrollView(
       child: Container(
         width: mediaQuery.size.width,
-        margin: const EdgeInsets.only(top: 25),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -172,6 +171,17 @@ class SignInScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,
+          elevation: 0.0,
+          leading: IconButton(
+            icon: Icon(
+              Icons.arrow_back_ios_rounded,
+              color: ProjectConstants.APP_FONT_COLOR,
+            ),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ),
         backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,
         body: _getBodyWidget(context),
       ),

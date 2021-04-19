@@ -337,7 +337,6 @@ class _SignupScreenState extends State<SignupScreen> {
         child: Center(
           child: Container(
             width: mediaQuery.size.width * 0.90,
-            margin: const EdgeInsets.only(top: 5),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
