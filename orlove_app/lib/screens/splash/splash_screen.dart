@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/screens/signin/signin_screen.dart';
 
+import '../home/home_screen.dart';
+
 class SplashScreen extends StatefulWidget {
   @override
   _SplashScreenState createState() => _SplashScreenState();
@@ -17,7 +19,8 @@ class _SplashScreenState extends State<SplashScreen> {
       Duration(seconds: ProjectConstants.SPLASH_SCREEN_DURATION_SECS),
       () => Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (BuildContext ctx) => SignInScreen(),
+          //builder: (BuildContext ctx) => SignInScreen(),
+          builder: (BuildContext ctx) => HomeScreen(),
         ),
       ),
     );

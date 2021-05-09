@@ -1,6 +1,9 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:orlove_app/constants.dart';
+import 'package:orlove_app/http/auth_controller.dart';
+import 'package:orlove_app/screens/home/home_screen.dart';
 import 'package:orlove_app/screens/signin/signin_screen.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -291,14 +294,50 @@ class _SignupScreenState extends State<SignupScreen> {
           ),
         ),
       ),
-      validator: MultiValidator(
-        [
-          RequiredValidator(
-            errorText: "Это поле обязательно к заполнению",
-          ),
-          MinLengthValidator(6,
-              errorText: "Пароль должен быть не менее 6 символов"),
-        ],
+      validator: (value) {
+        if (value != _passwordTextController.text) {
+          return "Пароли не совпадают!";
+        }
+        return null;
+      },
+    );
+  }
+
+  _signup(BuildContext context) async {
+    var validateRes = _formKey.currentState.validate();
+    if (!validateRes) {
+      return;
+    }
+
+    var authRes = await AuthController.performSignup(
+      email: _emailTextController.text,
+      password: _passwordTextController.text,
+      phone: _phoneTextController.text,
+      name: _nameTextController.text,
+      surname: _surnameTextController.text,
+    );
+
+    if (!authRes) {
+      return showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text("Произошла ошибка при регистрации!"),
+          content: Text(AuthController.lastErrorMsg),
+          actions: [
+            TextButton(
+              child: Text("Окей"),
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+            ),
+          ],
+        ),
+      );
+    }
+
+    Navigator.of(context).pushReplacement(
+      CupertinoPageRoute(
+        builder: (_) => HomeScreen(),
       ),
     );
   }
@@ -306,7 +345,7 @@ class _SignupScreenState extends State<SignupScreen> {
   Widget _getButtonWidget(MediaQueryData mediaQuery) {
     return Center(
       child: GestureDetector(
-        onTap: () {},
+        onTap: () => _signup(context),
         child: Container(
           width: mediaQuery.size.width * 0.80,
           height: 45.0,

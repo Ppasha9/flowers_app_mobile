@@ -9,4 +9,7 @@ class ProjectConstants {
   static const Color BACKGROUND_SPLASH_SCREEN_COLOR = Color(0xFFFFB9C2);
   static const Color BACKGROUND_SCREEN_COLOR = Colors.white;
   static const Color DEFAULT_STROKE_COLOR = Color(0xFFC1C1C1);
+
+  static const Color BUTTON_BACKGROUND_COLOR = Color(0xFFFFB9C2);
+  static const Color BUTTON_TEXT_COLOR = Color(0xFFD73534);
 }

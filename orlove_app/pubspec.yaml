@@ -1,5 +1,5 @@
 name: orlove_app
-description: A new Flutter project.
+description: ORLOVE flowers app
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `pub publish`. This is preferred for private packages.
@@ -24,6 +24,8 @@ dependencies:
   flutter:
     sdk: flutter
 
+  carousel_slider: ^2.3.1
+  http: ^0.12.0+2
   form_field_validator: ^1.0.1
   cupertino_icons: ^1.0.0
 
@@ -40,8 +42,17 @@ flutter:
 
   assets:
     - assets/images/orlove_text.png
+    - assets/images/orlove_appbar_text.png
     - assets/images/facebook_icon.png
     - assets/images/google_icon.png
+    - assets/images/vk_icon.png
+    - assets/images/instagram_icon.png
+    - assets/images/telegram_icon.png
+    - assets/images/whatsapp_icon.png
+    - assets/images/email_icon.png
+    - assets/images/New.jpg
+    - assets/images/Bouquet.jpg
+    - assets/images/Basket.jpg
 
   fonts:
     - family: Montserrat

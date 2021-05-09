@@ -1,7 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:orlove_app/constants.dart';
+import 'package:orlove_app/http/auth_controller.dart';
+import 'package:orlove_app/screens/home/home_screen.dart';
 import 'package:orlove_app/screens/signup/signup_screen.dart';
+import 'package:orlove_app/utils/utils.dart';
 
 class SignInInputForms extends StatefulWidget {
   @override
@@ -114,10 +118,48 @@ class _SignInInputFormsState extends State<SignInInputForms> {
     );
   }
 
+  _login(BuildContext context) async {
+    var validateRes = _formKey.currentState.validate();
+    if (!validateRes) {
+      return;
+    }
+
+    var authRes = await AuthController.performLogin(
+      _emailTextController.text,
+      _passwordTextController.text,
+    );
+
+    if (!authRes) {
+      return showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text("Произошла ошибка при авторизации!"),
+          content: Text(AuthController.lastErrorMsg),
+          actions: [
+            TextButton(
+              child: Text("Окей"),
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+            ),
+          ],
+        ),
+      );
+    }
+
+    await Utils.getAllCartInfo();
+
+    return Navigator.of(context).pushReplacement(
+      CupertinoPageRoute(
+        builder: (_) => HomeScreen(),
+      ),
+    );
+  }
+
   Widget _getButtonWidget(MediaQueryData mediaQuery) {
     return Center(
       child: GestureDetector(
-        onTap: () {},
+        onTap: () => _login(context),
         child: Container(
           width: mediaQuery.size.width * 0.80,
           height: 45.0,
@@ -128,13 +170,13 @@ class _SignInInputFormsState extends State<SignInInputForms> {
                 fontSize: 18 * mediaQuery.textScaleFactor,
                 fontFamily: ProjectConstants.APP_FONT_FAMILY,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFFD73534),
+                color: ProjectConstants.BUTTON_TEXT_COLOR,
               ),
             ),
           ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.all(Radius.circular(1.0)),
-            color: Color(0xFFFFB9C2),
+            color: ProjectConstants.BUTTON_BACKGROUND_COLOR,
           ),
         ),
       ),
