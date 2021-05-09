@@ -1,8 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.lavanda_app">
+    package="com.orloveflowers.orlove_app">
    <application
         android:usesCleartextTraffic="true"
-        android:label="lavanda_app"
+        android:label="orlove_app"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
