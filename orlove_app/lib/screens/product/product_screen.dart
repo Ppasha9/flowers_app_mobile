@@ -1,9 +1,11 @@
+import 'package:bottom_loader/bottom_loader.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/http/cart_controller.dart';
 import 'package:orlove_app/http/product_controller.dart';
 import 'package:orlove_app/screens/components/app_bar.dart';
+import 'package:orlove_app/screens/components/bottom_loader.dart';
 import 'package:orlove_app/screens/components/bottom_navigation_bar.dart';
 import 'package:orlove_app/screens/components/social_buttons.dart';
 import 'package:orlove_app/screens/product/product_screen_components.dart';
@@ -21,6 +23,8 @@ class ProductScreen extends StatefulWidget {
 }
 
 class ProductScreenState extends State<ProductScreen> {
+  BottomLoader bottomLoader;
+
   bool isLoading = true;
   dynamic productInfo;
 
@@ -44,14 +48,26 @@ class ProductScreenState extends State<ProductScreen> {
   }
 
   Future _addProductToCart() async {
+    if (!bottomLoader.isShowing()) {
+      bottomLoader.display();
+    }
+
     if (isAddedToCart) {
+      if (bottomLoader.isShowing()) {
+        bottomLoader.close();
+      }
+
       return;
     }
 
     await CartController.addProductToCart(widget.id);
     await Utils.getAllCartInfo();
+
+    if (bottomLoader.isShowing()) {
+      bottomLoader.close();
+    }
+
     setState(() {
-      print("Product successfully added to cart");
       isAddedToCart = true;
     });
   }
@@ -282,6 +298,8 @@ class ProductScreenState extends State<ProductScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bottomLoader = getBottomLoader(context);
+
     return SafeArea(
       child: Scaffold(
         backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,

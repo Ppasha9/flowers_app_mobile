@@ -1,8 +1,10 @@
+import 'package:bottom_loader/bottom_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/http/auth_controller.dart';
 import 'package:orlove_app/screens/components/app_bar.dart';
+import 'package:orlove_app/screens/components/bottom_loader.dart';
 import 'package:orlove_app/screens/components/bottom_navigation_bar.dart';
 import 'package:orlove_app/storage/storage.dart';
 import 'package:orlove_app/utils/utils.dart';
@@ -14,6 +16,8 @@ class AccountPersonalInfoScreen extends StatefulWidget {
 }
 
 class _AccountPersonalInfoScreenState extends State<AccountPersonalInfoScreen> {
+  BottomLoader bottomLoader;
+
   bool isLoaded = false;
   dynamic userInfo;
 
@@ -215,8 +219,16 @@ class _AccountPersonalInfoScreenState extends State<AccountPersonalInfoScreen> {
   }
 
   Future _onConfirmButtonPressed(BuildContext context) async {
+    if (!bottomLoader.isShowing()) {
+      bottomLoader.display();
+    }
+
     final validateRes = _formKey.currentState.validate();
     if (!validateRes) {
+      if (bottomLoader.isShowing()) {
+        bottomLoader.close();
+      }
+
       return;
     }
 
@@ -229,6 +241,10 @@ class _AccountPersonalInfoScreenState extends State<AccountPersonalInfoScreen> {
     );
 
     if (!editRes) {
+      if (bottomLoader.isShowing()) {
+        bottomLoader.close();
+      }
+
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -246,6 +262,11 @@ class _AccountPersonalInfoScreenState extends State<AccountPersonalInfoScreen> {
     }
 
     await Utils.updateUserInfo();
+
+    if (bottomLoader.isShowing()) {
+      bottomLoader.close();
+    }
+
     Navigator.of(context).pop();
   }
 
@@ -364,6 +385,8 @@ class _AccountPersonalInfoScreenState extends State<AccountPersonalInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bottomLoader = getBottomLoader(context);
+
     return SafeArea(
       child: Scaffold(
         backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,

@@ -1,8 +1,10 @@
+import 'package:bottom_loader/bottom_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/http/auth_controller.dart';
 import 'package:orlove_app/screens/components/app_bar.dart';
+import 'package:orlove_app/screens/components/bottom_loader.dart';
 import 'package:orlove_app/screens/components/bottom_navigation_bar.dart';
 import 'package:orlove_app/storage/storage.dart';
 
@@ -14,6 +16,8 @@ class AccountPasswordChangeScreen extends StatefulWidget {
 
 class _AccountPasswordChangeScreenState
     extends State<AccountPasswordChangeScreen> {
+  BottomLoader bottomLoader;
+
   final _formKey = GlobalKey<FormState>();
 
   final _newPasswordTextController = TextEditingController();
@@ -112,8 +116,16 @@ class _AccountPasswordChangeScreenState
   }
 
   Future _onConfirmButtonPressed(BuildContext context) async {
+    if (!bottomLoader.isShowing()) {
+      bottomLoader.display();
+    }
+
     final validateRes = _formKey.currentState.validate();
     if (!validateRes) {
+      if (bottomLoader.isShowing()) {
+        bottomLoader.close();
+      }
+
       return;
     }
 
@@ -124,6 +136,10 @@ class _AccountPasswordChangeScreenState
       phone: SecureStorage.phone,
       password: _newPasswordTextController.text,
     );
+
+    if (bottomLoader.isShowing()) {
+      bottomLoader.close();
+    }
 
     if (!editRes) {
       showDialog(
@@ -241,6 +257,8 @@ class _AccountPasswordChangeScreenState
 
   @override
   Widget build(BuildContext context) {
+    bottomLoader = getBottomLoader(context);
+
     return SafeArea(
       child: Scaffold(
         backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,

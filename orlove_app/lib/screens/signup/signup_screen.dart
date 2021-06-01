@@ -1,8 +1,10 @@
+import 'package:bottom_loader/bottom_loader.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/http/auth_controller.dart';
+import 'package:orlove_app/screens/components/bottom_loader.dart';
 import 'package:orlove_app/screens/home/home_screen.dart';
 import 'package:orlove_app/screens/signin/signin_screen.dart';
 
@@ -12,6 +14,8 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
+  BottomLoader bottomLoader;
+
   final _formKey = GlobalKey<FormState>();
 
   final _nameTextController = TextEditingController();
@@ -304,8 +308,16 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   _signup(BuildContext context) async {
+    if (!bottomLoader.isShowing()) {
+      bottomLoader.display();
+    }
+
     var validateRes = _formKey.currentState.validate();
     if (!validateRes) {
+      if (bottomLoader.isShowing()) {
+        bottomLoader.close();
+      }
+
       return;
     }
 
@@ -318,6 +330,10 @@ class _SignupScreenState extends State<SignupScreen> {
     );
 
     if (!authRes) {
+      if (bottomLoader.isShowing()) {
+        bottomLoader.close();
+      }
+
       return showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -333,6 +349,10 @@ class _SignupScreenState extends State<SignupScreen> {
           ],
         ),
       );
+    }
+
+    if (bottomLoader.isShowing()) {
+      bottomLoader.close();
     }
 
     Navigator.of(context).pushReplacement(
@@ -473,6 +493,8 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    bottomLoader = getBottomLoader(context);
+
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(

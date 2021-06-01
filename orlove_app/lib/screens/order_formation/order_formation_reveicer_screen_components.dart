@@ -1,3 +1,4 @@
+import 'package:bottom_loader/bottom_loader.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
@@ -15,6 +16,8 @@ class OrderFormationReceiverContentWidget extends StatefulWidget {
 
 class _OrderFormationReceiverContentWidgetState
     extends State<OrderFormationReceiverContentWidget> {
+  BottomLoader bottomLoader;
+
   final _formKey = GlobalKey<FormState>();
 
   final _nameTextController = TextEditingController();
@@ -202,8 +205,16 @@ class _OrderFormationReceiverContentWidgetState
   }
 
   Future _onConfirmButtonPressed(BuildContext context) async {
+    if (!bottomLoader.isShowing()) {
+      bottomLoader.display();
+    }
+
     final validateRes = _formKey.currentState.validate();
     if (!validateRes) {
+      if (bottomLoader.isShowing()) {
+        bottomLoader.close();
+      }
+
       return;
     }
 
@@ -216,6 +227,10 @@ class _OrderFormationReceiverContentWidgetState
     await CartController.increaseCartStatus();
     await Utils.getAllCartInfo();
 
+    if (bottomLoader.isShowing()) {
+      bottomLoader.close();
+    }
+
     Navigator.of(context).push(
       CupertinoPageRoute(
         builder: (_) => OrderFormationShippmentScreen(),
@@ -225,6 +240,8 @@ class _OrderFormationReceiverContentWidgetState
 
   @override
   Widget build(BuildContext context) {
+    bottomLoader = BottomLoader(context);
+
     _nameTextController.text = SecureStorage.name;
     _emailTextController.text = SecureStorage.email;
     _phoneTextController.text = SecureStorage.phone;

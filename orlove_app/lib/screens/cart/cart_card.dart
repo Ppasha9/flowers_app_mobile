@@ -1,9 +1,11 @@
+import 'package:bottom_loader/bottom_loader.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/http/cart_controller.dart';
 import 'package:orlove_app/screens/cart/cart_card_components.dart';
 import 'package:orlove_app/screens/components/app_bar.dart';
+import 'package:orlove_app/screens/components/bottom_loader.dart';
 import 'package:orlove_app/screens/order_formation/order_formation_receiver_screen.dart';
 import 'package:orlove_app/storage/storage.dart';
 
@@ -179,6 +181,8 @@ class CartCard extends StatefulWidget {
 }
 
 class CartCardState extends State<CartCard> {
+  BottomLoader bottomLoader;
+
   Widget _getProductsCardsListWidget() {
     var children = <Widget>[];
 
@@ -203,7 +207,15 @@ class CartCardState extends State<CartCard> {
 
   Future _onConfirmButtonPressed() async {
     if (SecureStorage.cartFullInfo["status"] == "Default") {
+      if (!bottomLoader.isShowing()) {
+        bottomLoader.display();
+      }
+
       await CartController.increaseCartStatus();
+
+      if (bottomLoader.isShowing()) {
+        bottomLoader.close();
+      }
     }
 
     Navigator.push(
@@ -398,6 +410,7 @@ class CartCardState extends State<CartCard> {
 
   @override
   Widget build(BuildContext context) {
+    bottomLoader = getBottomLoader(context);
     final mediaQuery = MediaQuery.of(context);
 
     return Center(

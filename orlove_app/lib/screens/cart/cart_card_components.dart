@@ -1,6 +1,8 @@
+import 'package:bottom_loader/bottom_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/http/cart_controller.dart';
+import 'package:orlove_app/screens/components/bottom_loader.dart';
 import 'package:orlove_app/storage/storage.dart';
 import 'package:orlove_app/utils/utils.dart';
 import 'cart_card.dart';
@@ -18,24 +20,61 @@ class ProductCardInCartCard extends StatefulWidget {
 }
 
 class _ProductCardInCartCardState extends State<ProductCardInCartCard> {
+  BottomLoader bottomLoader;
   dynamic productInfo;
 
   Future _addProductToCart() async {
+    if (!bottomLoader.isShowing()) {
+      bottomLoader.display();
+    }
+
     await CartController.addProductToCart(productInfo["info"]["id"]);
     await Utils.getAllCartInfo();
+
+    if (bottomLoader.isShowing()) {
+      bottomLoader.close();
+    }
+
     widget.parentState.setState(() {});
     widget.cartIconState.setState(() {});
   }
 
   Future _removeProductFromCart() async {
+    if (!bottomLoader.isShowing()) {
+      bottomLoader.display();
+    }
+
     await CartController.removeProductFromCart(productInfo["info"]["id"]);
     await Utils.getAllCartInfo();
+
+    if (bottomLoader.isShowing()) {
+      bottomLoader.close();
+    }
+
+    widget.parentState.setState(() {});
+    widget.cartIconState.setState(() {});
+  }
+
+  Future _deleteProductFromCart() async {
+    if (!bottomLoader.isShowing()) {
+      bottomLoader.display();
+    }
+
+    await CartController.permanentlyDeleteProductFromCart(
+        productInfo["info"]["id"]);
+    await Utils.getAllCartInfo();
+
+    if (bottomLoader.isShowing()) {
+      bottomLoader.close();
+    }
+
     widget.parentState.setState(() {});
     widget.cartIconState.setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+    bottomLoader = getBottomLoader(context);
     productInfo = SecureStorage.cartFullInfo["allProducts"]["products"]
         [widget.productIndexInCartArray];
     final mediaQuery = MediaQuery.of(context);
@@ -84,147 +123,152 @@ class _ProductCardInCartCardState extends State<ProductCardInCartCard> {
                   top: 10.0,
                   bottom: 10.0,
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.only(
-                        right: 5.0,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "${Utils.fromUTF8(productInfo["info"]["name"])}\n${productInfo["info"]["price"]} Руб.",
-                            style: TextStyle(
-                              fontSize: 13 * mediaQuery.textScaleFactor,
-                              fontFamily: ProjectConstants.APP_FONT_FAMILY,
-                              fontWeight: FontWeight.w600,
-                              color: ProjectConstants.APP_FONT_COLOR,
-                              decoration: TextDecoration.none,
-                            ),
-                          ),
-                          Icon(
-                            Icons.delete_forever,
-                            color: ProjectConstants.APP_FONT_COLOR,
-                          ),
-                        ],
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.only(
-                        right: 5.0,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Кол-во:",
-                            style: TextStyle(
-                              fontSize: 13 * mediaQuery.textScaleFactor,
-                              fontFamily: ProjectConstants.APP_FONT_FAMILY,
-                              fontWeight: FontWeight.normal,
-                              color: ProjectConstants.APP_FONT_COLOR,
-                              decoration: TextDecoration.none,
-                            ),
-                          ),
-                          Container(
-                            decoration: BoxDecoration(
-                              border: Border.all(
-                                color: ProjectConstants.DEFAULT_STROKE_COLOR,
+                child: Material(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.only(
+                          right: 5.0,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "${Utils.fromUTF8(productInfo["info"]["name"])}\n${productInfo["info"]["price"]} Руб.",
+                              style: TextStyle(
+                                fontSize: 13 * mediaQuery.textScaleFactor,
+                                fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                                fontWeight: FontWeight.w600,
+                                color: ProjectConstants.APP_FONT_COLOR,
+                                decoration: TextDecoration.none,
                               ),
-                              color: Colors.grey.shade100,
                             ),
-                            width: constraints.maxWidth * 0.20,
-                            child: LayoutBuilder(
-                              builder: (_, rowConstraints) {
-                                return Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    GestureDetector(
-                                      onTap: _removeProductFromCart,
-                                      child: Container(
-                                        width: rowConstraints.maxWidth * 0.33,
-                                        decoration: BoxDecoration(
-                                          border: Border.all(
-                                            color: ProjectConstants
-                                                .DEFAULT_STROKE_COLOR,
-                                          ),
-                                          color: Colors.white,
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            "-",
-                                            style: TextStyle(
-                                              fontSize: 26 *
-                                                  mediaQuery.textScaleFactor,
-                                              fontFamily: ProjectConstants
-                                                  .APP_FONT_FAMILY,
-                                              fontWeight: FontWeight.normal,
-                                              color: ProjectConstants
-                                                  .APP_FONT_COLOR,
-                                              decoration: TextDecoration.none,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    Container(
-                                      width: rowConstraints.maxWidth * 0.3,
-                                      child: Center(
-                                        child: Text(
-                                          productInfo["amount"].toString(),
-                                          style: TextStyle(
-                                            fontSize:
-                                                16 * mediaQuery.textScaleFactor,
-                                            fontFamily: ProjectConstants
-                                                .APP_FONT_FAMILY,
-                                            fontWeight: FontWeight.w600,
-                                            color:
-                                                ProjectConstants.APP_FONT_COLOR,
-                                            decoration: TextDecoration.none,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    GestureDetector(
-                                      onTap: _addProductToCart,
-                                      child: Container(
-                                        width: rowConstraints.maxWidth * 0.33,
-                                        decoration: BoxDecoration(
-                                          border: Border.all(
-                                            color: ProjectConstants
-                                                .DEFAULT_STROKE_COLOR,
-                                          ),
-                                          color: Colors.white,
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            "+",
-                                            style: TextStyle(
-                                              fontSize: 26 *
-                                                  mediaQuery.textScaleFactor,
-                                              fontFamily: ProjectConstants
-                                                  .APP_FONT_FAMILY,
-                                              fontWeight: FontWeight.normal,
-                                              color: ProjectConstants
-                                                  .APP_FONT_COLOR,
-                                              decoration: TextDecoration.none,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
+                            GestureDetector(
+                              onTap: _deleteProductFromCart,
+                              child: Icon(
+                                Icons.delete_forever,
+                                color: ProjectConstants.APP_FONT_COLOR,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                      Container(
+                        padding: const EdgeInsets.only(
+                          right: 5.0,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Кол-во:",
+                              style: TextStyle(
+                                fontSize: 13 * mediaQuery.textScaleFactor,
+                                fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                                fontWeight: FontWeight.normal,
+                                color: ProjectConstants.APP_FONT_COLOR,
+                                decoration: TextDecoration.none,
+                              ),
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: ProjectConstants.DEFAULT_STROKE_COLOR,
+                                ),
+                                color: Colors.grey.shade100,
+                              ),
+                              width: constraints.maxWidth * 0.20,
+                              child: LayoutBuilder(
+                                builder: (_, rowConstraints) {
+                                  return Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      GestureDetector(
+                                        onTap: _removeProductFromCart,
+                                        child: Container(
+                                          width: rowConstraints.maxWidth * 0.33,
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                              color: ProjectConstants
+                                                  .DEFAULT_STROKE_COLOR,
+                                            ),
+                                            color: Colors.white,
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              "-",
+                                              style: TextStyle(
+                                                fontSize: 26 *
+                                                    mediaQuery.textScaleFactor,
+                                                fontFamily: ProjectConstants
+                                                    .APP_FONT_FAMILY,
+                                                fontWeight: FontWeight.normal,
+                                                color: ProjectConstants
+                                                    .APP_FONT_COLOR,
+                                                decoration: TextDecoration.none,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      Container(
+                                        width: rowConstraints.maxWidth * 0.3,
+                                        child: Center(
+                                          child: Text(
+                                            productInfo["amount"].toString(),
+                                            style: TextStyle(
+                                              fontSize: 16 *
+                                                  mediaQuery.textScaleFactor,
+                                              fontFamily: ProjectConstants
+                                                  .APP_FONT_FAMILY,
+                                              fontWeight: FontWeight.w600,
+                                              color: ProjectConstants
+                                                  .APP_FONT_COLOR,
+                                              decoration: TextDecoration.none,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      GestureDetector(
+                                        onTap: _addProductToCart,
+                                        child: Container(
+                                          width: rowConstraints.maxWidth * 0.33,
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                              color: ProjectConstants
+                                                  .DEFAULT_STROKE_COLOR,
+                                            ),
+                                            color: Colors.white,
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              "+",
+                                              style: TextStyle(
+                                                fontSize: 26 *
+                                                    mediaQuery.textScaleFactor,
+                                                fontFamily: ProjectConstants
+                                                    .APP_FONT_FAMILY,
+                                                fontWeight: FontWeight.normal,
+                                                color: ProjectConstants
+                                                    .APP_FONT_COLOR,
+                                                decoration: TextDecoration.none,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

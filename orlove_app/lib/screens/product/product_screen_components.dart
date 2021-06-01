@@ -18,7 +18,7 @@ class ProductPictureWidget extends StatelessWidget {
       decoration: BoxDecoration(
         image: DecorationImage(
           image: NetworkImage(picData["url"]),
-          fit: BoxFit.fill,
+          fit: BoxFit.cover,
         ),
       ),
     );

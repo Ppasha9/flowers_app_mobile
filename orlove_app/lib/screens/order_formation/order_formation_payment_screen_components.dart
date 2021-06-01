@@ -1,7 +1,9 @@
+import 'package:bottom_loader/bottom_loader.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/http/cart_controller.dart';
+import 'package:orlove_app/screens/components/bottom_loader.dart';
 import 'package:orlove_app/screens/home/home_screen.dart';
 import 'package:orlove_app/storage/storage.dart';
 import 'package:orlove_app/utils/utils.dart';
@@ -14,6 +16,8 @@ class OrderFormationPaymentComponentsWidget extends StatefulWidget {
 
 class _OrderFormationPaymentComponentsWidgetState
     extends State<OrderFormationPaymentComponentsWidget> {
+  BottomLoader bottomLoader;
+
   bool _isOnlineSelected = false;
   bool _isCashSelected = true;
 
@@ -35,10 +39,18 @@ class _OrderFormationPaymentComponentsWidgetState
       return;
     }
 
+    if (!bottomLoader.isShowing()) {
+      bottomLoader.display();
+    }
+
     await CartController.updatePaymentInfo(_isCashSelected ? "cash" : "online");
     await CartController.increaseCartStatus();
     await CartController.createOrder();
     await Utils.getAllCartInfo();
+
+    if (bottomLoader.isShowing()) {
+      bottomLoader.close();
+    }
 
     Navigator.of(context).push(
       CupertinoPageRoute(
@@ -399,6 +411,7 @@ class _OrderFormationPaymentComponentsWidgetState
 
   @override
   Widget build(BuildContext context) {
+    bottomLoader = getBottomLoader(context);
     final mediaQuery = MediaQuery.of(context);
 
     return Column(

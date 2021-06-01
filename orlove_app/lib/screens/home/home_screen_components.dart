@@ -37,7 +37,7 @@ class ProductPerCategoryWidget extends StatelessWidget {
         decoration: BoxDecoration(
           image: DecorationImage(
             image: NetworkImage(data["product"]["picture"]["url"]),
-            fit: BoxFit.fill,
+            fit: BoxFit.cover,
           ),
         ),
         child: Container(

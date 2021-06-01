@@ -1,8 +1,10 @@
+import 'package:bottom_loader/bottom_loader.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/http/auth_controller.dart';
+import 'package:orlove_app/screens/components/bottom_loader.dart';
 import 'package:orlove_app/screens/home/home_screen.dart';
 import 'package:orlove_app/screens/signup/signup_screen.dart';
 import 'package:orlove_app/utils/utils.dart';
@@ -13,6 +15,8 @@ class SignInInputForms extends StatefulWidget {
 }
 
 class _SignInInputFormsState extends State<SignInInputForms> {
+  BottomLoader bottomLoader;
+
   final _formKey = GlobalKey<FormState>();
 
   final _emailTextController = TextEditingController();
@@ -119,8 +123,15 @@ class _SignInInputFormsState extends State<SignInInputForms> {
   }
 
   _login(BuildContext context) async {
+    if (!bottomLoader.isShowing()) {
+      bottomLoader.display();
+    }
+
     var validateRes = _formKey.currentState.validate();
     if (!validateRes) {
+      if (bottomLoader.isShowing()) {
+        bottomLoader.close();
+      }
       return;
     }
 
@@ -130,6 +141,10 @@ class _SignInInputFormsState extends State<SignInInputForms> {
     );
 
     if (!authRes) {
+      if (bottomLoader.isShowing()) {
+        bottomLoader.close();
+      }
+
       return showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -148,6 +163,10 @@ class _SignInInputFormsState extends State<SignInInputForms> {
     }
 
     await Utils.getAllCartInfo();
+
+    if (bottomLoader.isShowing()) {
+      bottomLoader.close();
+    }
 
     return Navigator.of(context).pushReplacement(
       CupertinoPageRoute(
@@ -185,6 +204,8 @@ class _SignInInputFormsState extends State<SignInInputForms> {
 
   @override
   Widget build(BuildContext context) {
+    bottomLoader = getBottomLoader(context);
+
     final mediaQuery = MediaQuery.of(context);
 
     return Container(

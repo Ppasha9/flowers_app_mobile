@@ -51,6 +51,28 @@ class CartController {
     return true;
   }
 
+  static Future<bool> permanentlyDeleteProductFromCart(productId) async {
+    String url = HttpConstants.SERVER_HOST +
+        HttpConstants.CART_PATH +
+        "/remove-product?productId=$productId&permanently=${true.toString()}";
+
+    dynamic headers = HttpConstants.DEFAULT_REQUEST_HEADERS;
+    headers["Authorization"] =
+        "${SecureStorage.tokenType} ${SecureStorage.token}";
+
+    final response = await http.post(
+      url,
+      headers: headers,
+    );
+
+    if (response.statusCode != 200) {
+      lastErrorMsg = "Cannot permanently delete product from cart";
+      return false;
+    }
+
+    return true;
+  }
+
   static Future<bool> isProductInCart(productId) async {
     String url = HttpConstants.SERVER_HOST +
         HttpConstants.CART_PATH +

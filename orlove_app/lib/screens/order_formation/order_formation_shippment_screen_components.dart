@@ -1,8 +1,10 @@
+import 'package:bottom_loader/bottom_loader.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/http/cart_controller.dart';
+import 'package:orlove_app/screens/components/bottom_loader.dart';
 import 'package:orlove_app/screens/order_formation/order_formation_payment_screen.dart';
 import 'package:orlove_app/storage/storage.dart';
 import 'package:orlove_app/utils/utils.dart';
@@ -15,6 +17,8 @@ class OrderFormationShippmentComponentsWidget extends StatefulWidget {
 
 class _OrderFormationShippmentComponentsWidgetState
     extends State<OrderFormationShippmentComponentsWidget> {
+  BottomLoader bottomLoader;
+
   final _formKey = GlobalKey<FormState>();
 
   final _streetTextController = TextEditingController();
@@ -215,9 +219,17 @@ class _OrderFormationShippmentComponentsWidgetState
       return;
     }
 
+    if (!bottomLoader.isShowing()) {
+      bottomLoader.display();
+    }
+
     if (_isCourierSelected) {
       final validateRes = _formKey.currentState.validate();
       if (!validateRes) {
+        if (bottomLoader.isShowing()) {
+          bottomLoader.close();
+        }
+
         return;
       }
     }
@@ -231,6 +243,10 @@ class _OrderFormationShippmentComponentsWidgetState
     );
     await CartController.increaseCartStatus();
     await Utils.getAllCartInfo();
+
+    if (bottomLoader.isShowing()) {
+      bottomLoader.close();
+    }
 
     Navigator.of(context).push(
       CupertinoPageRoute(
@@ -377,6 +393,8 @@ class _OrderFormationShippmentComponentsWidgetState
 
   @override
   Widget build(BuildContext context) {
+    bottomLoader = getBottomLoader(context);
+
     if (SecureStorage.cartFullInfo["receiverStreet"] != "") {
       _streetTextController.text = SecureStorage.cartFullInfo["receiverStreet"];
       _houseNumTextController.text =

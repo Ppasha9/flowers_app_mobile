@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/screens/signin/signin_input_forms.dart';
 
@@ -47,23 +48,63 @@ class SignInScreen extends StatelessWidget {
     );
   }
 
-  Widget _getGoogleAuthButton(MediaQueryData mediaQuery) {
-    return Container(
-      width: mediaQuery.size.width * 0.90,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 35,
-            height: 35,
-            child: Image.asset("assets/images/google_icon.png"),
-            margin: const EdgeInsets.only(
-              right: 10,
+  Future _onGoogleSignIn(BuildContext context) async {
+    GoogleSignIn googleSignIn = GoogleSignIn(
+      scopes: [
+        "email",
+      ],
+    );
+
+    googleSignIn.signIn().then((GoogleSignInAccount acc) async {
+      GoogleSignInAuthentication auth = await acc.authentication;
+
+      print(acc.id);
+      print(acc.email);
+      print(acc.displayName);
+      print(acc.photoUrl);
+
+      acc.authentication.then((GoogleSignInAuthentication auth) {
+        print(auth.accessToken);
+        print(auth.idToken);
+      });
+    }).catchError((err) {
+      return showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text("Произошла ошибка при авторизации!"),
+          content: Text("Неизвестная ошибка"),
+          actions: [
+            TextButton(
+              child: Text("Окей"),
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
             ),
-          ),
-          GestureDetector(
-            onTap: () {},
-            child: Container(
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _getGoogleAuthButton(BuildContext context) {
+    MediaQueryData mediaQuery = MediaQuery.of(context);
+
+    return GestureDetector(
+      onTap: () => _onGoogleSignIn(context),
+      child: Container(
+        width: mediaQuery.size.width * 0.90,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 35,
+              height: 35,
+              child: Image.asset("assets/images/google_icon.png"),
+              margin: const EdgeInsets.only(
+                right: 10,
+              ),
+            ),
+            Container(
               padding: const EdgeInsets.all(12),
               width: mediaQuery.size.width * 0.70,
               decoration: BoxDecoration(
@@ -84,8 +125,8 @@ class SignInScreen extends StatelessWidget {
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -153,7 +194,7 @@ class SignInScreen extends StatelessWidget {
             const SizedBox(
               height: 10,
             ),
-            _getGoogleAuthButton(mediaQuery),
+            _getGoogleAuthButton(context),
             const SizedBox(
               height: 60,
             ),
