@@ -308,10 +308,6 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   _signup(BuildContext context) async {
-    if (!bottomLoader.isShowing()) {
-      bottomLoader.display();
-    }
-
     var validateRes = _formKey.currentState.validate();
     if (!validateRes) {
       if (bottomLoader.isShowing()) {
@@ -319,6 +315,10 @@ class _SignupScreenState extends State<SignupScreen> {
       }
 
       return;
+    }
+
+    if (!bottomLoader.isShowing()) {
+      bottomLoader.display();
     }
 
     var authRes = await AuthController.performSignup(
@@ -495,22 +495,20 @@ class _SignupScreenState extends State<SignupScreen> {
   Widget build(BuildContext context) {
     bottomLoader = getBottomLoader(context);
 
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,
-          elevation: 0.0,
-          leading: IconButton(
-            icon: Icon(
-              Icons.arrow_back_ios_rounded,
-              color: ProjectConstants.APP_FONT_COLOR,
-            ),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-        ),
+    return Scaffold(
+      appBar: AppBar(
         backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,
-        body: _getBodyWidget(MediaQuery.of(context)),
+        elevation: 0.0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_rounded,
+            color: ProjectConstants.APP_FONT_COLOR,
+          ),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
+      backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,
+      body: _getBodyWidget(MediaQuery.of(context)),
     );
   }
 }

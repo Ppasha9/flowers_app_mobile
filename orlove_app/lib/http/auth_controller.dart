@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 
 import 'package:orlove_app/http/constants.dart';
 import 'package:orlove_app/storage/storage.dart';
-import 'package:orlove_app/utils/utils.dart';
 
 class AuthController {
   static String lastErrorMsg = "";
@@ -18,8 +17,6 @@ class AuthController {
     SecureStorage.email = body["email"];
     SecureStorage.phone = body["phone"];
     SecureStorage.isLogged = true;
-
-    await Utils.getAllFavourites();
   }
 
   static Future<bool> performLogin(String email, String password) async {

@@ -1,10 +1,13 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/http/product_controller.dart';
 import 'package:orlove_app/screens/components/app_bar.dart';
 import 'package:orlove_app/screens/components/bottom_navigation_bar.dart';
+import 'package:orlove_app/screens/products_by_category/filter_screen.dart';
 import 'package:orlove_app/screens/products_by_category/products_by_category_screen_components.dart';
+import 'package:syncfusion_flutter_sliders/sliders.dart';
 
 class ProductsByCategoryScreen extends StatefulWidget {
   final String category;
@@ -28,14 +31,23 @@ class _ProductsByCategoryScreenState extends State<ProductsByCategoryScreen> {
 
   bool isOriginalDataRetrieved = false;
 
+  SfRangeValues priceRange;
+  num maxPrice;
+
+  bool isSortPriceUp = true;
+  bool isSortPriceDown = false;
+
+  List<String> tags = [];
+  List<String> flowers = [];
+
+  bool isFiltering = false;
+
   @override
   void initState() {
     super.initState();
     scrollController = new ScrollController()..addListener(_scrollListener);
-    _fetchOriginalData().then((value) {
-      setState(() {
-        isOriginalDataRetrieved = true;
-      });
+    _fetchOriginalData().whenComplete(() {
+      _fetchMaxPrice();
     });
   }
 
@@ -56,7 +68,23 @@ class _ProductsByCategoryScreenState extends State<ProductsByCategoryScreen> {
     setState(() {
       isLoadingNewData = true;
       currDataGroupNum++;
-      _fetchNewData();
+      if (!isFiltering) {
+        _fetchNewData();
+      } else {
+        _fetchNewFilteredData();
+      }
+    });
+  }
+
+  _fetchMaxPrice() {
+    return ProductController.getProductsMaxPriceByCategory(widget.category)
+        .then((value) {
+      setState(() {
+        maxPrice = value;
+        if (priceRange == null) {
+          priceRange = SfRangeValues(0, maxPrice);
+        }
+      });
     });
   }
 
@@ -89,8 +117,93 @@ class _ProductsByCategoryScreenState extends State<ProductsByCategoryScreen> {
       setState(() {
         currProducts = newProducts;
         isOriginalDataRetrieved = true;
+        isFiltering = false;
       });
     });
+  }
+
+  Future _fetchFilteredData() async {
+    ProductController.getFilteredProductsForCategory(
+      category: widget.category,
+      limit: 4,
+      groupNum: 0,
+      minPrice: priceRange.start.round(),
+      maxPrice: priceRange.end.round(),
+      tags: tags,
+      flowers: flowers,
+    ).then((filteredProducts) {
+      setState(() {
+        currProducts = filteredProducts;
+        isOriginalDataRetrieved = true;
+      });
+    });
+  }
+
+  _fetchNewFilteredData() async {
+    return ProductController.getFilteredProductsForCategory(
+      category: widget.category,
+      limit: 4,
+      groupNum: currDataGroupNum,
+      minPrice: priceRange.start.round(),
+      maxPrice: priceRange.end.round(),
+      tags: tags,
+      flowers: flowers,
+    ).then((newFilteredProducts) {
+      setState(
+        () {
+          if (newFilteredProducts == null) {
+            currDataGroupNum--;
+          } else {
+            currProducts.addAll(newFilteredProducts);
+          }
+
+          isLoadingNewData = false;
+        },
+      );
+    });
+  }
+
+  Future<void> _onFilterClicked(BuildContext context) async {
+    var result = await Navigator.of(context).push(
+      CupertinoPageRoute(
+        builder: (_) => FilterProductsScreen(
+          isSortPriceDown: isSortPriceDown,
+          isSortPriceUp: isSortPriceUp,
+          priceRangeValues: priceRange,
+          maxPrice: maxPrice,
+          selectedTags: tags,
+          selectedFlowers: flowers,
+          hasCategoryChoice: false,
+          selectedCategory: "",
+        ),
+      ),
+    );
+
+    if (result == null) {
+      if (isFiltering) {
+        currDataGroupNum = 1;
+        priceRange = SfRangeValues(0, maxPrice);
+
+        setState(() {
+          isOriginalDataRetrieved = false;
+        });
+
+        _fetchOriginalData();
+      } else {
+        return;
+      }
+    }
+
+    setState(() {
+      isOriginalDataRetrieved = false;
+    });
+
+    isFiltering = true;
+    currDataGroupNum = 1;
+    priceRange = result["priceRange"];
+    tags = result["selectedTags"];
+    flowers = result["selectedFlowers"];
+    _fetchFilteredData();
   }
 
   Widget _getUpperButtonsRow(MediaQueryData mediaQuery) {
@@ -114,26 +227,31 @@ class _ProductsByCategoryScreenState extends State<ProductsByCategoryScreen> {
               ),
             ),
           ),
-          Container(
-            margin: const EdgeInsets.only(
-              right: 10.0,
-            ),
-            child: Row(
-              children: [
-                Text(
-                  "Фильтры",
-                  style: TextStyle(
-                    fontSize: 14 * mediaQuery.textScaleFactor,
-                    fontFamily: ProjectConstants.APP_FONT_FAMILY,
-                    fontWeight: FontWeight.w600,
+          GestureDetector(
+            onTap: () {
+              _onFilterClicked(context);
+            },
+            child: Container(
+              margin: const EdgeInsets.only(
+                right: 10.0,
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    "Фильтры",
+                    style: TextStyle(
+                      fontSize: 14 * mediaQuery.textScaleFactor,
+                      fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                      fontWeight: FontWeight.w600,
+                      color: ProjectConstants.APP_FONT_COLOR,
+                    ),
+                  ),
+                  Icon(
+                    Icons.format_list_bulleted_sharp,
                     color: ProjectConstants.APP_FONT_COLOR,
                   ),
-                ),
-                Icon(
-                  Icons.format_list_bulleted_sharp,
-                  color: ProjectConstants.APP_FONT_COLOR,
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
@@ -152,7 +270,6 @@ class _ProductsByCategoryScreenState extends State<ProductsByCategoryScreen> {
         scrollDirection: Axis.vertical,
         itemCount: (productsToShow.length / 2).round(),
         itemBuilder: (_, index) => ProductByCategoryScreenComponent(
-          category: widget.category,
           leftPrJson: productsToShow[2 * index],
           rightPrJson: (2 * index + 1 < productsToShow.length)
               ? productsToShow[2 * index + 1]
@@ -184,7 +301,9 @@ class _ProductsByCategoryScreenState extends State<ProductsByCategoryScreen> {
   }
 
   Widget _getBodyWidget(BuildContext context) {
-    if (!isOriginalDataRetrieved || currProducts == null) {
+    if (!isOriginalDataRetrieved ||
+        currProducts == null ||
+        currProducts == []) {
       return Center(
         child: CircularProgressIndicator(),
       );
@@ -208,13 +327,11 @@ class _ProductsByCategoryScreenState extends State<ProductsByCategoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,
-        body: _getBodyWidget(context),
-        appBar: getAppBar(context),
-        bottomNavigationBar: getBottomNavigationBar(context),
-      ),
+    return Scaffold(
+      backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,
+      body: _getBodyWidget(context),
+      appBar: getAppBar(context),
+      bottomNavigationBar: getBottomNavigationBar(context),
     );
   }
 }

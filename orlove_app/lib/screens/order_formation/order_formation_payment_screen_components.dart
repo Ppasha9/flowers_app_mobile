@@ -7,6 +7,7 @@ import 'package:orlove_app/screens/components/bottom_loader.dart';
 import 'package:orlove_app/screens/home/home_screen.dart';
 import 'package:orlove_app/storage/storage.dart';
 import 'package:orlove_app/utils/utils.dart';
+import 'package:time_machine/time_machine.dart';
 
 class OrderFormationPaymentComponentsWidget extends StatefulWidget {
   @override
@@ -167,6 +168,55 @@ class _OrderFormationPaymentComponentsWidgetState
     );
   }
 
+  num _getProductPriceWithParameters(dynamic prInfo) {
+    num res = prInfo["info"]["price"];
+    var parameters =
+        prInfo["parameters"] != null ? (prInfo["parameters"] as List) : [];
+    for (dynamic param in parameters) {
+      if (param["parameterPrice"] != null) {
+        res += param["parameterPrice"];
+      }
+    }
+
+    return res.round();
+  }
+
+  Widget _getProductParametersWidget(
+      MediaQueryData mediaQuery, dynamic prInfo) {
+    var parameters =
+        prInfo["parameters"] != null ? (prInfo["parameters"] as List) : [];
+    if (parameters == []) {
+      return Container();
+    }
+
+    List<Widget> children = [];
+    parameters.forEach((el) {
+      children.add(
+        Container(
+          child: Row(
+            children: [
+              Text(
+                "${Utils.fromUTF8(el["parameterName"])}: ${Utils.fromUTF8(el["parameterValue"])} (+ ${el["parameterPrice"].round()} Руб.)",
+                style: TextStyle(
+                  fontSize: 12 * mediaQuery.textScaleFactor,
+                  fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                  color: ProjectConstants.APP_FONT_COLOR,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
+
+    return Container(
+      child: Column(
+        children: children,
+      ),
+    );
+  }
+
   Widget _getProductCardWidget(BuildContext context, dynamic prInfo) {
     final mediaQuery = MediaQuery.of(context);
 
@@ -203,7 +253,7 @@ class _OrderFormationPaymentComponentsWidgetState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "${Utils.fromUTF8(prInfo["info"]["name"])}\n${prInfo["info"]["price"]} Руб.",
+                      "${Utils.fromUTF8(prInfo["info"]["name"])}\n${Utils.getPriceCorrectString(_getProductPriceWithParameters(prInfo))} Руб.",
                       style: TextStyle(
                         fontSize: 14 * mediaQuery.textScaleFactor,
                         fontFamily: ProjectConstants.APP_FONT_FAMILY,
@@ -211,6 +261,7 @@ class _OrderFormationPaymentComponentsWidgetState
                         fontWeight: FontWeight.w600,
                       ),
                     ),
+                    _getProductParametersWidget(mediaQuery, prInfo),
                     Text(
                       "Кол-во: ${prInfo["amount"]}",
                       style: TextStyle(
@@ -289,6 +340,9 @@ class _OrderFormationPaymentComponentsWidgetState
   }
 
   Widget _getDeliveryInfoWidget(MediaQueryData mediaQuery) {
+    var dateTime = DateTime.parse(SecureStorage.cartFullInfo["deliveryDate"]);
+    var date = OffsetDateTime(new LocalDateTime.dateTime(dateTime), Offset(3));
+
     return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: 20.0,
@@ -318,14 +372,23 @@ class _OrderFormationPaymentComponentsWidgetState
               fontWeight: FontWeight.w600,
             ),
           ),
+          Text(
+            "Дата: ${date.dayOfMonth}.${date.monthOfYear}.${date.year}",
+            style: TextStyle(
+              fontSize: 14 * mediaQuery.textScaleFactor,
+              fontFamily: ProjectConstants.APP_FONT_FAMILY,
+              color: ProjectConstants.APP_FONT_COLOR,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
   }
 
   Widget _getFinalPriceWidget(MediaQueryData mediaQuery) {
-    double cartPrice = SecureStorage.cartFullInfo["price"];
-    double shippmentPrice =
+    int cartPrice = SecureStorage.cartFullInfo["price"].round();
+    int shippmentPrice =
         SecureStorage.cartFullInfo["deliveryMethod"] == "courier" ? 300 : 0;
 
     return Container(
@@ -348,7 +411,7 @@ class _OrderFormationPaymentComponentsWidgetState
                 ),
               ),
               Text(
-                "$cartPrice Руб.",
+                "${Utils.getPriceCorrectString(cartPrice)} Руб.",
                 style: TextStyle(
                   fontSize: 14 * mediaQuery.textScaleFactor,
                   fontFamily: ProjectConstants.APP_FONT_FAMILY,
@@ -394,7 +457,7 @@ class _OrderFormationPaymentComponentsWidgetState
                 ),
               ),
               Text(
-                "${cartPrice + shippmentPrice} Руб.",
+                "${Utils.getPriceCorrectString(cartPrice + shippmentPrice)} Руб.",
                 style: TextStyle(
                   fontSize: 14 * mediaQuery.textScaleFactor,
                   fontFamily: ProjectConstants.APP_FONT_FAMILY,

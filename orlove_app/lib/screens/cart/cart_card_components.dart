@@ -28,7 +28,10 @@ class _ProductCardInCartCardState extends State<ProductCardInCartCard> {
       bottomLoader.display();
     }
 
-    await CartController.addProductToCart(productInfo["info"]["id"]);
+    await CartController.addProductToCart(
+      productInfo["info"]["id"],
+      productInfo["parameters"],
+    );
     await Utils.getAllCartInfo();
 
     if (bottomLoader.isShowing()) {
@@ -44,7 +47,10 @@ class _ProductCardInCartCardState extends State<ProductCardInCartCard> {
       bottomLoader.display();
     }
 
-    await CartController.removeProductFromCart(productInfo["info"]["id"]);
+    await CartController.removeProductFromCart(
+      productInfo["info"]["id"],
+      productInfo["parameters"],
+    );
     await Utils.getAllCartInfo();
 
     if (bottomLoader.isShowing()) {
@@ -61,7 +67,9 @@ class _ProductCardInCartCardState extends State<ProductCardInCartCard> {
     }
 
     await CartController.permanentlyDeleteProductFromCart(
-        productInfo["info"]["id"]);
+      productInfo["info"]["id"],
+      productInfo["parameters"],
+    );
     await Utils.getAllCartInfo();
 
     if (bottomLoader.isShowing()) {
@@ -70,6 +78,20 @@ class _ProductCardInCartCardState extends State<ProductCardInCartCard> {
 
     widget.parentState.setState(() {});
     widget.cartIconState.setState(() {});
+  }
+
+  num _getProductPriceWithParameters() {
+    num res = productInfo["info"]["price"];
+    var parameters = productInfo["parameters"] != null
+        ? (productInfo["parameters"] as List)
+        : [];
+    for (dynamic param in parameters) {
+      if (param["parameterPrice"] != null) {
+        res += param["parameterPrice"];
+      }
+    }
+
+    return res.round();
   }
 
   @override
@@ -135,7 +157,7 @@ class _ProductCardInCartCardState extends State<ProductCardInCartCard> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              "${Utils.fromUTF8(productInfo["info"]["name"])}\n${productInfo["info"]["price"]} Руб.",
+                              "${Utils.fromUTF8(productInfo["info"]["name"])}\n${Utils.getPriceCorrectString(_getProductPriceWithParameters())} Руб.",
                               style: TextStyle(
                                 fontSize: 13 * mediaQuery.textScaleFactor,
                                 fontFamily: ProjectConstants.APP_FONT_FAMILY,

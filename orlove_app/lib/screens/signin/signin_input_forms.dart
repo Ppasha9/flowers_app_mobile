@@ -39,12 +39,6 @@ class _SignInInputFormsState extends State<SignInInputForms> {
           fontSize: 15 * mediaQuery.textScaleFactor,
           fontWeight: FontWeight.w600,
         ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(1.0)),
-          borderSide: BorderSide(
-            color: ProjectConstants.DEFAULT_STROKE_COLOR,
-          ),
-        ),
         errorStyle: TextStyle(
           color: Colors.redAccent,
         ),
@@ -90,12 +84,6 @@ class _SignInInputFormsState extends State<SignInInputForms> {
           fontSize: 15 * mediaQuery.textScaleFactor,
           fontWeight: FontWeight.w600,
         ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(1.0)),
-          borderSide: BorderSide(
-            color: ProjectConstants.DEFAULT_STROKE_COLOR,
-          ),
-        ),
         errorStyle: TextStyle(
           color: Colors.redAccent,
         ),
@@ -123,16 +111,16 @@ class _SignInInputFormsState extends State<SignInInputForms> {
   }
 
   _login(BuildContext context) async {
-    if (!bottomLoader.isShowing()) {
-      bottomLoader.display();
-    }
-
     var validateRes = _formKey.currentState.validate();
     if (!validateRes) {
       if (bottomLoader.isShowing()) {
         bottomLoader.close();
       }
       return;
+    }
+
+    if (!bottomLoader.isShowing()) {
+      bottomLoader.display();
     }
 
     var authRes = await AuthController.performLogin(
@@ -224,7 +212,7 @@ class _SignInInputFormsState extends State<SignInInputForms> {
             ),
             _getButtonWidget(mediaQuery),
             SizedBox(
-              height: 45,
+              height: 10.0,
             ),
             GestureDetector(
               onTap: () {
@@ -240,8 +228,8 @@ class _SignInInputFormsState extends State<SignInInputForms> {
                   style: TextStyle(
                     color: ProjectConstants.APP_FONT_COLOR,
                     fontFamily: ProjectConstants.APP_FONT_FAMILY,
-                    fontSize: 24 * mediaQuery.textScaleFactor,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 18 * mediaQuery.textScaleFactor,
+                    fontWeight: FontWeight.w600,
                     decoration: TextDecoration.underline,
                   ),
                 ),

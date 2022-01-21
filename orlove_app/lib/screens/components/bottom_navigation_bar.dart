@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:orlove_app/screens/account/account_screen.dart';
 import 'package:orlove_app/screens/catalog/calatog_screen.dart';
+import 'package:orlove_app/screens/favourite/favourite_screen.dart';
 import 'package:orlove_app/screens/home/home_screen.dart';
 import 'package:orlove_app/screens/signin/signin_screen.dart';
 import 'package:orlove_app/storage/storage.dart';
@@ -44,58 +45,57 @@ Widget getBottomNavigationBar(
           );
           break;
 
+        case 2:
+          Navigator.of(context).pushAndRemoveUntil(
+              CupertinoPageRoute(
+                builder: (_) => FavouriteScreen(),
+              ),
+              (route) => false);
+          break;
+
         case 3:
-          if (SecureStorage.isLogged) {
-            Navigator.of(context).pushAndRemoveUntil(
-              CupertinoPageRoute(
-                builder: (_) => AccountScreen(),
-              ),
-              (route) => false,
-            );
-          } else {
-            Navigator.of(context).push(
-              CupertinoPageRoute(
-                builder: (_) => SignInScreen(),
-              ),
-            );
-          }
+          Navigator.of(context).pushAndRemoveUntil(
+            CupertinoPageRoute(
+              builder: (_) => AccountScreen(),
+            ),
+            (route) => false,
+          );
           break;
       }
     },
     backgroundColor: Colors.white,
     type: BottomNavigationBarType.fixed,
-    showUnselectedLabels: true,
-    iconSize: 35.0,
+    iconSize: 28.0,
+    showSelectedLabels: false,
+    showUnselectedLabels: false,
     selectedFontSize: 14.0,
     unselectedFontSize: 14.0,
-    selectedItemColor: Color(0xFFD73534),
-    unselectedItemColor: Color(0xFFD73534),
     items: [
       BottomNavigationBarItem(
         icon: Icon(
           Icons.home_outlined,
-          color: Color(0xFFD73534),
+          color: Color(0xFF989797),
         ),
         label: "Главная",
       ),
       BottomNavigationBarItem(
         icon: Icon(
           Icons.category_outlined,
-          color: Color(0xFFD73534),
+          color: Color(0xFF989797),
         ),
         label: "Каталог",
       ),
       BottomNavigationBarItem(
         icon: Icon(
-          Icons.favorite_border_outlined,
-          color: Color(0xFFD73534),
+          Icons.favorite,
+          color: Color(0xFFFFB9C2),
         ),
         label: "Избранные",
       ),
       BottomNavigationBarItem(
         icon: Icon(
           Icons.account_circle_outlined,
-          color: Color(0xFFD73534),
+          color: Color(0xFF989797),
         ),
         label: "Профиль",
       ),

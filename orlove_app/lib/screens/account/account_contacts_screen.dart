@@ -107,13 +107,11 @@ class AccountContactsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,
-        body: _getBodyWidget(context),
-        appBar: getAppBar(context),
-        bottomNavigationBar: getBottomNavigationBar(context),
-      ),
+    return Scaffold(
+      backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,
+      body: _getBodyWidget(context),
+      appBar: getAppBar(context),
+      bottomNavigationBar: getBottomNavigationBar(context),
     );
   }
 }

@@ -1,5 +1,6 @@
 class HttpConstants {
   static const String SERVER_HOST = "http://212.1.214.199:8080";
+  //static const String SERVER_HOST = "http://127.0.0.1:8080";
 
   static const String AUTH_PATH = "/api/auth";
   static const String PRODUCT_PATH = "/api/product";

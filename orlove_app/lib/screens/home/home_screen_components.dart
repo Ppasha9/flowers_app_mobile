@@ -1,9 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:orlove_app/http/product_controller.dart';
+import 'package:provider/provider.dart';
 
 import 'package:orlove_app/languages/language_constants.dart';
+import 'package:orlove_app/models/favorites_model.dart';
 import 'package:orlove_app/screens/components/product_element_widget.dart';
 import 'package:orlove_app/screens/product/product_screen.dart';
 import 'package:orlove_app/screens/products_by_category/products_by_category_screen.dart';
@@ -147,9 +148,10 @@ class DayProductWidget extends StatefulWidget {
 }
 
 class _DayProductWidgetState extends State<DayProductWidget> {
-  bool isFavourite;
+  bool isFavorite = false;
 
-  Future _onHeartPressed(BuildContext context) async {
+  Future _onHeartPressed(
+      BuildContext context, FavoritesModel favoritesModel) async {
     if (!SecureStorage.isLogged) {
       showDialog(
         context: context,
@@ -169,26 +171,26 @@ class _DayProductWidgetState extends State<DayProductWidget> {
       return;
     }
 
-    if (isFavourite) {
-      await ProductController.removeProductFromFavourite(widget.data["id"])
-          .then((value) {
-        setState(() {});
-      });
+    if (isFavorite) {
+      await favoritesModel.removeFavorite(widget.data["id"]);
     } else {
-      await ProductController.addProductToFavourite(widget.data["id"])
-          .then((value) {
-        setState(() {});
-      });
+      await favoritesModel.addNewFavorite(widget.data["id"]);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    isFavourite = Utils.isProductFavouriteById(widget.data["id"]);
+    FavoritesModel favoritesModel = context.watch<FavoritesModel>();
+    favoritesModel.isFavorite(widget.data["id"]).then((value) {
+      setState(() {
+        isFavorite = value;
+      });
+    });
+
     final mediaQuery = MediaQuery.of(context);
 
     return Container(
-      height: mediaQuery.size.height / 4.5,
+      height: mediaQuery.size.height / 4,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -196,48 +198,47 @@ class _DayProductWidgetState extends State<DayProductWidget> {
             margin: const EdgeInsets.only(
               left: 20.0,
             ),
-            child: Stack(
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    Navigator.of(context).push(
-                      CupertinoPageRoute(
-                        builder: (_) => ProductScreen(
-                          id: widget.data["id"],
-                        ),
-                      ),
-                    );
-                  },
-                  child: Container(
-                    width: mediaQuery.size.width / 2.2,
+            child: GestureDetector(
+              onTap: () {
+                Navigator.of(context).push(
+                  CupertinoPageRoute(
+                    builder: (_) => ProductScreen(
+                      id: widget.data["id"],
+                    ),
+                  ),
+                );
+              },
+              child: Stack(
+                alignment: AlignmentDirectional.topEnd,
+                children: [
+                  Container(
+                    width: mediaQuery.size.width / 2.5,
                     decoration: BoxDecoration(
                       image: DecorationImage(
                         image: NetworkImage(widget.data["picture"]["url"]),
                         fit: BoxFit.fill,
                       ),
                       borderRadius:
-                          const BorderRadius.all(const Radius.circular(8.0)),
+                          const BorderRadius.all(const Radius.circular(4.0)),
                     ),
                   ),
-                ),
-                Container(
-                  margin: EdgeInsets.only(
-                    left: mediaQuery.size.width / 2.2 - 40.0,
-                    top: 10.0,
-                  ),
-                  child: GestureDetector(
-                    //onTap: () => _onHeartPressed(context),
-                    onTap: () {},
-                    child: Icon(
-                      isFavourite
-                          ? Icons.favorite
-                          : Icons.favorite_border_outlined,
-                      color: isFavourite ? Colors.red : Colors.white,
-                      size: 35.0,
+                  GestureDetector(
+                    onTap: () => _onHeartPressed(context, favoritesModel),
+                    child: Container(
+                      margin: const EdgeInsets.only(
+                        right: 5.0,
+                        top: 5.0,
+                      ),
+                      child: Icon(
+                        isFavorite
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_outline_rounded,
+                        color: isFavorite ? Color(0xFFFFB9C2) : Colors.white,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           SizedBox(
@@ -247,7 +248,7 @@ class _DayProductWidgetState extends State<DayProductWidget> {
             margin: const EdgeInsets.only(
               right: 40.0,
             ),
-            width: mediaQuery.size.width / 3,
+            width: mediaQuery.size.width / 2.5,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -270,12 +271,15 @@ class _DayProductWidgetState extends State<DayProductWidget> {
                   style: TextStyle(
                     fontSize: 13 * mediaQuery.textScaleFactor,
                     fontFamily: ProjectConstants.APP_FONT_FAMILY,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.normal,
                     color: ProjectConstants.APP_FONT_COLOR,
                   ),
                 ),
+                SizedBox(
+                  height: 5.0,
+                ),
                 Text(
-                  "${widget.data["price"]} Руб.",
+                  "${Utils.getPriceCorrectString(widget.data["price"].round())} ₽",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 13 * mediaQuery.textScaleFactor,
@@ -301,7 +305,7 @@ class NewProductsListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height / 3.8,
+      height: MediaQuery.of(context).size.height / 3,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemBuilder: (_, index) => Container(

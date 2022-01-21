@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/http/category_controller.dart';
+import 'package:orlove_app/languages/language_constants.dart';
 import 'package:orlove_app/screens/components/app_bar.dart';
 import 'package:orlove_app/screens/components/bottom_navigation_bar.dart';
 import 'package:orlove_app/screens/products_by_category/products_by_category_screen.dart';
@@ -41,15 +42,70 @@ class _CatalogScreenState extends State<CatalogScreen> {
       ),
       child: Center(
         child: Container(
-          width: mediaQuery.size.width * 0.90,
-          height: mediaQuery.size.height * 0.25,
+          margin: const EdgeInsets.symmetric(
+            vertical: 10.0,
+            horizontal: 20.0,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    LanguageConstants.fromEngToRus(
+                      categoryInfo["code"],
+                    ),
+                    style: TextStyle(
+                      color: ProjectConstants.APP_FONT_COLOR,
+                      fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                      fontSize: 16 * mediaQuery.textScaleFactor,
+                      fontWeight: FontWeight.normal,
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    color: ProjectConstants.APP_FONT_COLOR,
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 15.0,
+              ),
+              const Divider(
+                height: 3.0,
+                thickness: 1.0,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _getFilterButtonWidget(BuildContext context) {
+    MediaQueryData mediaQuery = MediaQuery.of(context);
+
+    return GestureDetector(
+      onTap: () {},
+      child: Center(
+        child: Container(
+          height: 50,
+          width: mediaQuery.size.width / 1.3,
+          margin: const EdgeInsets.only(top: 20.0),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(
-              Radius.circular(8.0),
-            ),
-            image: DecorationImage(
-              image: AssetImage("assets/images/${categoryInfo["code"]}.jpg"),
-              fit: BoxFit.fill,
+            borderRadius: BorderRadius.all(Radius.circular(1.0)),
+            color: ProjectConstants.BUTTON_BACKGROUND_COLOR,
+          ),
+          child: Center(
+            child: Text(
+              "Фильтры",
+              style: TextStyle(
+                fontSize: 18 * mediaQuery.textScaleFactor,
+                fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                color: ProjectConstants.BUTTON_TEXT_COLOR,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ),
@@ -67,17 +123,19 @@ class _CatalogScreenState extends State<CatalogScreen> {
     return SingleChildScrollView(
       child: Container(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: categoriesList
-              .map(
-                (e) => Container(
-                  margin: const EdgeInsets.symmetric(
-                    vertical: 10.0,
-                  ),
-                  child: _getCategoryWidget(context, e),
-                ),
-              )
-              .toList(),
+          children: [
+            SizedBox(
+              height: 20.0,
+            ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: categoriesList
+                  .map(
+                    (e) => _getCategoryWidget(context, e),
+                  )
+                  .toList(),
+            ),
+          ],
         ),
       ),
     );
@@ -85,15 +143,13 @@ class _CatalogScreenState extends State<CatalogScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,
-        body: _getBodyWidget(context),
-        appBar: getAppBar(context),
-        bottomNavigationBar: getBottomNavigationBar(
-          context,
-          isMenu: true,
-        ),
+    return Scaffold(
+      backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,
+      body: _getBodyWidget(context),
+      appBar: getAppBar(context, hasFilters: true),
+      bottomNavigationBar: getBottomNavigationBar(
+        context,
+        isMenu: true,
       ),
     );
   }

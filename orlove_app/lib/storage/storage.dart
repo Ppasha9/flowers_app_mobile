@@ -10,6 +10,4 @@ class SecureStorage {
   static String email;
 
   static dynamic cartFullInfo;
-
-  static List<dynamic> listOfFavourites;
 }

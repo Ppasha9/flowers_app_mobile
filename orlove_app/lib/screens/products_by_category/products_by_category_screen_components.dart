@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:orlove_app/screens/components/product_element_widget.dart';
 
 class ProductByCategoryScreenComponent extends StatelessWidget {
-  final String category;
   final dynamic leftPrJson;
   final dynamic rightPrJson;
 
   const ProductByCategoryScreenComponent({
-    this.category,
     this.leftPrJson,
     this.rightPrJson: null,
   });

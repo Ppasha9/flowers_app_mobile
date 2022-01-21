@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/http/cart_controller.dart';
 import 'package:orlove_app/screens/cart/cart_card_components.dart';
-import 'package:orlove_app/screens/components/app_bar.dart';
 import 'package:orlove_app/screens/components/bottom_loader.dart';
 import 'package:orlove_app/screens/order_formation/order_formation_receiver_screen.dart';
 import 'package:orlove_app/storage/storage.dart';
+import 'package:orlove_app/utils/utils.dart';
 
 final String cart_icon_tag = "cart-icon-tag";
 
@@ -58,13 +58,7 @@ class CartIconWidget extends StatefulWidget {
 }
 
 class CartIconWidgetState extends State<CartIconWidget> {
-  bool isPressed = false;
-
   void _onPressed(BuildContext context) {
-    setState(() {
-      isPressed = true;
-    });
-
     Navigator.of(context).push(
       HeroDialogRoute(
         builder: (_) => CartCard(
@@ -76,39 +70,14 @@ class CartIconWidgetState extends State<CartIconWidget> {
 
   @override
   Widget build(BuildContext context) {
-    setState(() {
-      isPressed = false;
-    });
-
     final mediaQuery = MediaQuery.of(context);
 
     var children = <Widget>[];
-    if (isPressed) {
-      children.add(Container(
-        margin: const EdgeInsets.only(
-          top: 8.0,
-          left: 7.0,
-        ),
-        width: 40.0,
-        height: 40.0,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(8.0)),
-          boxShadow: [
-            const BoxShadow(
-              color: ProjectConstants.DEFAULT_STROKE_COLOR,
-            ),
-            const BoxShadow(
-              color: Color(0xFFE8E0E7),
-              spreadRadius: -1.0,
-              blurRadius: 1.0,
-            ),
-          ],
-        ),
-      ));
-    }
-
     children.add(
       Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+        ),
         child: Material(
           child: IconButton(
             icon: Icon(
@@ -116,7 +85,7 @@ class CartIconWidgetState extends State<CartIconWidget> {
             ),
             onPressed: () => _onPressed(context),
             color: ProjectConstants.APP_FONT_COLOR,
-            iconSize: 42.0,
+            iconSize: 30.0,
           ),
         ),
       ),
@@ -160,11 +129,19 @@ class CartIconWidgetState extends State<CartIconWidget> {
       }
     }
 
-    return Hero(
-      tag: cart_icon_tag,
-      child: Container(
-        child: Stack(
-          children: children,
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+      ),
+      child: Hero(
+        tag: cart_icon_tag,
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+          ),
+          child: Stack(
+            children: children,
+          ),
         ),
       ),
     );
@@ -355,7 +332,7 @@ class CartCardState extends State<CartCard> {
                             ),
                           ),
                           Text(
-                            "${SecureStorage.cartFullInfo["price"]} Руб.",
+                            "${Utils.getPriceCorrectString(SecureStorage.cartFullInfo["price"].round())} Руб.",
                             style: TextStyle(
                               fontSize: 14 * mediaQuery.textScaleFactor,
                               fontFamily: ProjectConstants.APP_FONT_FAMILY,

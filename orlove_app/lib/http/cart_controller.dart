@@ -4,20 +4,26 @@ import 'package:http/http.dart' as http;
 import 'package:orlove_app/http/constants.dart';
 import 'package:orlove_app/http/product_controller.dart';
 import 'package:orlove_app/storage/storage.dart';
+import 'package:time_machine/time_machine.dart';
 
 class CartController {
   static String lastErrorMsg = "";
 
-  static Future<bool> addProductToCart(id) async {
-    String url = HttpConstants.SERVER_HOST +
-        HttpConstants.CART_PATH +
-        "/add-product?productId=$id";
+  static Future<bool> addProductToCart(id, params) async {
+    String url =
+        HttpConstants.SERVER_HOST + HttpConstants.CART_PATH + "/add-product";
     dynamic headers = HttpConstants.DEFAULT_REQUEST_HEADERS;
     headers["Authorization"] =
         "${SecureStorage.tokenType} ${SecureStorage.token}";
 
+    dynamic reqBody = {
+      "productId": id,
+      "parameters": params,
+    };
+
     final response = await http.post(
       url,
+      body: json.encode(reqBody),
       headers: headers,
     );
 
@@ -29,17 +35,22 @@ class CartController {
     return true;
   }
 
-  static Future<bool> removeProductFromCart(productId) async {
-    String url = HttpConstants.SERVER_HOST +
-        HttpConstants.CART_PATH +
-        "/remove-product?productId=$productId";
+  static Future<bool> removeProductFromCart(productId, params) async {
+    String url =
+        HttpConstants.SERVER_HOST + HttpConstants.CART_PATH + "/remove-product";
 
     dynamic headers = HttpConstants.DEFAULT_REQUEST_HEADERS;
     headers["Authorization"] =
         "${SecureStorage.tokenType} ${SecureStorage.token}";
 
+    dynamic reqBody = {
+      "productId": productId,
+      "parameters": params,
+    };
+
     final response = await http.post(
       url,
+      body: json.encode(reqBody),
       headers: headers,
     );
 
@@ -51,17 +62,26 @@ class CartController {
     return true;
   }
 
-  static Future<bool> permanentlyDeleteProductFromCart(productId) async {
-    String url = HttpConstants.SERVER_HOST +
-        HttpConstants.CART_PATH +
-        "/remove-product?productId=$productId&permanently=${true.toString()}";
+  static Future<bool> permanentlyDeleteProductFromCart(
+    productId,
+    params,
+  ) async {
+    String url =
+        HttpConstants.SERVER_HOST + HttpConstants.CART_PATH + "/remove-product";
 
     dynamic headers = HttpConstants.DEFAULT_REQUEST_HEADERS;
     headers["Authorization"] =
         "${SecureStorage.tokenType} ${SecureStorage.token}";
 
+    dynamic reqBody = {
+      "productId": productId,
+      "parameters": params,
+      "permanently": true.toString(),
+    };
+
     final response = await http.post(
       url,
+      body: json.encode(reqBody),
       headers: headers,
     );
 
@@ -123,7 +143,11 @@ class CartController {
     for (dynamic elm in productsDescr["products"]) {
       var productFullInfo =
           await ProductController.getProductInfoById(elm["id"]);
-      res["products"].add({"info": productFullInfo, "amount": elm["amount"]});
+      res["products"].add({
+        "info": productFullInfo,
+        "amount": elm["amount"],
+        "parameters": elm["parameters"],
+      });
     }
 
     return res;
@@ -222,8 +246,8 @@ class CartController {
     return true;
   }
 
-  static Future<bool> updateShippingInfo(
-      street, houseNum, apartmentNum, comment, deliveryMethod) async {
+  static Future<bool> updateShippingInfo(street, houseNum, apartmentNum,
+      comment, deliveryMethod, DateTime deliveryDate) async {
     String url =
         HttpConstants.SERVER_HOST + HttpConstants.CART_PATH + "/formation-info";
 
@@ -231,12 +255,14 @@ class CartController {
     headers["Authorization"] =
         "${SecureStorage.tokenType} ${SecureStorage.token}";
 
+    var localDateTime = new LocalDateTime.dateTime(deliveryDate.toLocal());
     dynamic request = {
       "receiverStreet": street,
       "receiverHouseNum": houseNum,
       "receiverApartmentNum": apartmentNum,
       "deliveryComment": comment,
-      "deliveryMethod": deliveryMethod
+      "deliveryMethod": deliveryMethod,
+      "deliveryDate": OffsetDateTime(localDateTime, Offset(3)).toString(),
     };
 
     final response = await http.post(

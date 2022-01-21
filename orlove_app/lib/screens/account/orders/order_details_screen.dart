@@ -29,6 +29,55 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
     super.initState();
   }
 
+  num _getProductPriceWithParameters(dynamic prInfo) {
+    num res = prInfo["info"]["price"];
+    var parameters =
+        prInfo["parameters"] != null ? (prInfo["parameters"] as List) : [];
+    for (dynamic param in parameters) {
+      if (param["parameterPrice"] != null) {
+        res += param["parameterPrice"];
+      }
+    }
+
+    return res.round();
+  }
+
+  Widget _getProductParametersWidget(
+      MediaQueryData mediaQuery, dynamic prInfo) {
+    var parameters =
+        prInfo["parameters"] != null ? (prInfo["parameters"] as List) : [];
+    if (parameters == []) {
+      return Container();
+    }
+
+    List<Widget> children = [];
+    parameters.forEach((el) {
+      children.add(
+        Container(
+          child: Row(
+            children: [
+              Text(
+                "${Utils.fromUTF8(el["parameterName"])}: ${Utils.fromUTF8(el["parameterValue"])} (+ ${el["parameterPrice"].round()} Руб.)",
+                style: TextStyle(
+                  fontSize: 12 * mediaQuery.textScaleFactor,
+                  fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                  color: ProjectConstants.APP_FONT_COLOR,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
+
+    return Container(
+      child: Column(
+        children: children,
+      ),
+    );
+  }
+
   Widget _getProductCardWidget(BuildContext context, dynamic prInfo) {
     final mediaQuery = MediaQuery.of(context);
 
@@ -65,7 +114,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "${Utils.fromUTF8(prInfo["info"]["name"])}\n${prInfo["info"]["price"]} Руб.",
+                      "${Utils.fromUTF8(prInfo["info"]["name"])}\n${Utils.getPriceCorrectString(_getProductPriceWithParameters(prInfo))} Руб.",
                       style: TextStyle(
                         fontSize: 14 * mediaQuery.textScaleFactor,
                         fontFamily: ProjectConstants.APP_FONT_FAMILY,
@@ -73,6 +122,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
+                    _getProductParametersWidget(mediaQuery, prInfo),
                     Text(
                       "Кол-во: ${prInfo["amount"]}",
                       style: TextStyle(
@@ -183,9 +233,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   }
 
   Widget _getFinalPriceWidget(MediaQueryData mediaQuery) {
-    double cartPrice = orderFullInfo["price"];
-    double shippmentPrice =
-        orderFullInfo["deliveryMethod"] == "courier" ? 300 : 0;
+    int cartPrice = orderFullInfo["price"].round();
+    int shippmentPrice = orderFullInfo["deliveryMethod"] == "courier" ? 300 : 0;
 
     return Container(
       margin: const EdgeInsets.symmetric(
@@ -207,7 +256,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                 ),
               ),
               Text(
-                "$cartPrice Руб.",
+                "${Utils.getPriceCorrectString(cartPrice)} Руб.",
                 style: TextStyle(
                   fontSize: 14 * mediaQuery.textScaleFactor,
                   fontFamily: ProjectConstants.APP_FONT_FAMILY,
@@ -253,7 +302,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                 ),
               ),
               Text(
-                "${cartPrice + shippmentPrice} Руб.",
+                "${Utils.getPriceCorrectString(cartPrice + shippmentPrice)} Руб.",
                 style: TextStyle(
                   fontSize: 14 * mediaQuery.textScaleFactor,
                   fontFamily: ProjectConstants.APP_FONT_FAMILY,
@@ -523,15 +572,13 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,
-        body: _getBodyWidget(context),
-        appBar: getAppBar(context),
-        bottomNavigationBar: getBottomNavigationBar(
-          context,
-          isAccount: true,
-        ),
+    return Scaffold(
+      backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,
+      body: _getBodyWidget(context),
+      appBar: getAppBar(context),
+      bottomNavigationBar: getBottomNavigationBar(
+        context,
+        isAccount: true,
       ),
     );
   }

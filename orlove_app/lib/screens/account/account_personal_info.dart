@@ -219,10 +219,6 @@ class _AccountPersonalInfoScreenState extends State<AccountPersonalInfoScreen> {
   }
 
   Future _onConfirmButtonPressed(BuildContext context) async {
-    if (!bottomLoader.isShowing()) {
-      bottomLoader.display();
-    }
-
     final validateRes = _formKey.currentState.validate();
     if (!validateRes) {
       if (bottomLoader.isShowing()) {
@@ -230,6 +226,10 @@ class _AccountPersonalInfoScreenState extends State<AccountPersonalInfoScreen> {
       }
 
       return;
+    }
+
+    if (!bottomLoader.isShowing()) {
+      bottomLoader.display();
     }
 
     var editRes = await AuthController.performEdit(
@@ -387,13 +387,11 @@ class _AccountPersonalInfoScreenState extends State<AccountPersonalInfoScreen> {
   Widget build(BuildContext context) {
     bottomLoader = getBottomLoader(context);
 
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,
-        body: _getBodyWidget(context),
-        appBar: getAppBar(context),
-        bottomNavigationBar: getBottomNavigationBar(context),
-      ),
+    return Scaffold(
+      backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,
+      body: _getBodyWidget(context),
+      appBar: getAppBar(context),
+      bottomNavigationBar: getBottomNavigationBar(context),
     );
   }
 }

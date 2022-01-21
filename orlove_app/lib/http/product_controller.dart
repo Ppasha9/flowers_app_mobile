@@ -61,11 +61,12 @@ class ProductController {
     }
   }
 
-  static Future<List<dynamic>> getProductsForCategory(
-      {String category,
-      int limit: 5,
-      bool isAll: false,
-      int groupNum: 0}) async {
+  static Future<List<dynamic>> getProductsForCategory({
+    String category,
+    int limit: 5,
+    bool isAll: false,
+    int groupNum: 0,
+  }) async {
     String url = isAll
         ? (HttpConstants.SERVER_HOST +
             HttpConstants.PRODUCT_PATH +
@@ -76,6 +77,71 @@ class ProductController {
 
     if (groupNum != 0) {
       url += "&group-num=$groupNum";
+    }
+
+    var response;
+    if (SecureStorage.isLogged) {
+      dynamic headers = {
+        "Accept": "*/*",
+        "Authorization": "${SecureStorage.tokenType} ${SecureStorage.token}",
+      };
+      response = await http.get(
+        url,
+        headers: headers,
+      );
+    } else {
+      response = await http.get(url);
+    }
+
+    if (response.statusCode != 200) {
+      lastErrorMsg = "Cannot get products for category $category";
+      return null;
+    }
+
+    var responseBody = json.decode(response.body);
+    for (dynamic productJson in responseBody["products"]) {
+      final productPictures = await getProductAllPictures(productJson["id"]);
+      if (productPictures == null) {
+        return null;
+      }
+
+      productJson["picture"] = productPictures[0];
+    }
+
+    return responseBody["products"];
+  }
+
+  static Future<List<dynamic>> getFilteredProductsForCategory({
+    String category,
+    int limit,
+    int groupNum,
+    num minPrice,
+    num maxPrice,
+    List<String> tags: null,
+    List<String> flowers: null,
+  }) async {
+    String url = (HttpConstants.SERVER_HOST +
+        HttpConstants.PRODUCT_PATH +
+        "?limit=$limit&category=$category&min-price=$minPrice&max-price=$maxPrice");
+
+    if (groupNum != 0) {
+      url += "&group-num=$groupNum";
+    }
+
+    if (tags != null && tags.length > 0) {
+      url += "&tags=";
+      tags.forEach((e) {
+        url += "$e;";
+      });
+      url = url.substring(0, url.length - 1);
+    }
+
+    if (flowers != null && flowers.length > 0) {
+      url += "&flowers=";
+      flowers.forEach((e) {
+        url += "$e;";
+      });
+      url = url.substring(0, url.length - 1);
     }
 
     var response;
@@ -140,6 +206,8 @@ class ProductController {
     }
 
     responseBody["pictures"] = pics;
+    responseBody["picture"] = pics[0];
+
     return responseBody;
   }
 
@@ -162,7 +230,6 @@ class ProductController {
       return false;
     }
 
-    await Utils.addProductToLocalFavourites(id);
     return true;
   }
 
@@ -185,7 +252,6 @@ class ProductController {
       return false;
     }
 
-    Utils.removeProductFromLocalFavourites(id);
     return true;
   }
 
@@ -223,8 +289,73 @@ class ProductController {
       }
 
       prInfo["pictures"] = pics;
+      prInfo["picture"] = pics[0];
     }
 
     return responseBody;
+  }
+
+  static Future<List<dynamic>> getProductsByName(String name) async {
+    String url = HttpConstants.SERVER_HOST +
+        HttpConstants.PRODUCT_PATH +
+        "?substr=$name";
+
+    var response;
+    if (SecureStorage.isLogged) {
+      dynamic headers = {
+        "Accept": "*/*",
+        "Authorization": "${SecureStorage.tokenType} ${SecureStorage.token}",
+      };
+      response = await http.get(
+        url,
+        headers: headers,
+      );
+    } else {
+      response = await http.get(url);
+    }
+
+    if (response.statusCode != 200) {
+      lastErrorMsg = "Cannot find products with name like $name";
+      return [];
+    }
+
+    var responseBody = json.decode(response.body);
+    for (dynamic productJson in responseBody["products"]) {
+      final productPictures = await getProductAllPictures(productJson["id"]);
+      if (productPictures == null) {
+        return null;
+      }
+
+      productJson["picture"] = productPictures[0];
+    }
+
+    return responseBody["products"];
+  }
+
+  static Future<num> getProductsMaxPriceByCategory(String category) async {
+    String url = HttpConstants.SERVER_HOST +
+        HttpConstants.PRODUCT_PATH +
+        "/max-price?category=$category";
+
+    var response;
+    if (SecureStorage.isLogged) {
+      dynamic headers = {
+        "Accept": "*/*",
+        "Authorization": "${SecureStorage.tokenType} ${SecureStorage.token}",
+      };
+      response = await http.get(
+        url,
+        headers: headers,
+      );
+    } else {
+      response = await http.get(url);
+    }
+
+    if (response.statusCode != 200) {
+      lastErrorMsg = "Cannot retrieve max price for category $category";
+      return 0;
+    }
+
+    return json.decode(response.body);
   }
 }

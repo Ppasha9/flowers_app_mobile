@@ -55,6 +55,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _getBodyWidget(BuildContext context) {
+    //FavoritesModel favoritesModel = context.watch<FavoritesModel>();
+    //favoritesModel.init().then((value) {});
+
     if (!isAllLoaded) {
       return Center(
         child: CircularProgressIndicator(),
@@ -71,13 +74,13 @@ class _HomeScreenState extends State<HomeScreen> {
               products: productsPerCategory,
             ),
             SizedBox(
-              height: 10.0,
+              height: 25.0,
             ),
             DayProductWidget(
               data: newProducts[0],
             ),
             SizedBox(
-              height: 20.0,
+              height: 25.0,
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -117,13 +120,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: TextStyle(
                             fontSize: 14 * mediaQuery.textScaleFactor,
                             fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                            fontWeight: FontWeight.w600,
                             color: ProjectConstants.APP_FONT_COLOR,
                           ),
                         ),
                         Icon(
-                          Icons.arrow_forward_sharp,
+                          Icons.arrow_forward_ios_rounded,
                           color: ProjectConstants.APP_FONT_COLOR,
-                          size: 18.0,
+                          size: 16.0,
                         ),
                       ],
                     ),
@@ -132,13 +136,13 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             SizedBox(
-              height: 10.0,
+              height: 20.0,
             ),
             NewProductsListWidget(
               newProducts: newProducts,
             ),
             SizedBox(
-              height: 20.0,
+              height: 5.0,
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -170,13 +174,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           style: TextStyle(
                             fontSize: 14 * mediaQuery.textScaleFactor,
                             fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                            fontWeight: FontWeight.w600,
                             color: ProjectConstants.APP_FONT_COLOR,
                           ),
                         ),
                         Icon(
-                          Icons.arrow_forward_sharp,
+                          Icons.arrow_forward_ios_rounded,
                           color: ProjectConstants.APP_FONT_COLOR,
-                          size: 18.0,
+                          size: 16.0,
                         ),
                       ],
                     ),
@@ -221,15 +226,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,
-        body: _getBodyWidget(context),
-        appBar: getAppBar(context),
-        bottomNavigationBar: getBottomNavigationBar(
-          context,
-          isHome: true,
-        ),
+    return Scaffold(
+      backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,
+      body: _getBodyWidget(context),
+      appBar: getAppBar(context),
+      bottomNavigationBar: getBottomNavigationBar(
+        context,
+        isHome: true,
       ),
     );
   }

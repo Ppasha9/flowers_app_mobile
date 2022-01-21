@@ -205,10 +205,6 @@ class _OrderFormationReceiverContentWidgetState
   }
 
   Future _onConfirmButtonPressed(BuildContext context) async {
-    if (!bottomLoader.isShowing()) {
-      bottomLoader.display();
-    }
-
     final validateRes = _formKey.currentState.validate();
     if (!validateRes) {
       if (bottomLoader.isShowing()) {
@@ -216,6 +212,10 @@ class _OrderFormationReceiverContentWidgetState
       }
 
       return;
+    }
+
+    if (!bottomLoader.isShowing()) {
+      bottomLoader.display();
     }
 
     await CartController.updateReceiverInfo(
@@ -242,10 +242,10 @@ class _OrderFormationReceiverContentWidgetState
   Widget build(BuildContext context) {
     bottomLoader = BottomLoader(context);
 
-    _nameTextController.text = SecureStorage.name;
+    _nameTextController.text = Utils.fromUTF8(SecureStorage.name);
     _emailTextController.text = SecureStorage.email;
     _phoneTextController.text = SecureStorage.phone;
-    _surnameTextController.text = SecureStorage.surname;
+    _surnameTextController.text = Utils.fromUTF8(SecureStorage.surname);
 
     final mediaQuery = MediaQuery.of(context);
 

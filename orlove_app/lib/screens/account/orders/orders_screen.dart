@@ -127,6 +127,38 @@ class _OrdersScreenState extends State<OrdersScreen> {
   }
 
   Widget _getOrdersListWidget(MediaQueryData mediaQuery) {
+    if (orders.length == 0) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "В данный момент у вас нет заказов",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 18 * mediaQuery.textScaleFactor,
+                fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                fontWeight: FontWeight.w600,
+                color: ProjectConstants.APP_FONT_COLOR,
+                decoration: TextDecoration.none,
+              ),
+            ),
+            Text(
+              "Чтобы сделать заказ, добавьте товар в корзину",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 12 * mediaQuery.textScaleFactor,
+                fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                fontWeight: FontWeight.normal,
+                color: ProjectConstants.APP_FONT_COLOR,
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Column(
       children: orders
           .map(
@@ -196,15 +228,13 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,
-        body: _getBodyWidget(context),
-        appBar: getAppBar(context),
-        bottomNavigationBar: getBottomNavigationBar(
-          context,
-          isAccount: true,
-        ),
+    return Scaffold(
+      backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,
+      body: _getBodyWidget(context),
+      appBar: getAppBar(context),
+      bottomNavigationBar: getBottomNavigationBar(
+        context,
+        isAccount: true,
       ),
     );
   }

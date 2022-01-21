@@ -29,7 +29,13 @@ dependencies:
   form_field_validator: ^1.0.1
   cupertino_icons: ^1.0.0
   bottom_loader: ^0.2.2
-  google_sign_in:
+  syncfusion_flutter_sliders:
+  url_launcher:
+  provider:
+  fluttertoast:
+  time_machine:
+  build_runner:
+  # google_sign_in: 4.4.4
 
 dev_dependencies:
   flutter_test:
@@ -45,16 +51,12 @@ flutter:
   assets:
     - assets/images/orlove_text.png
     - assets/images/orlove_appbar_text.png
-    - assets/images/facebook_icon.png
     - assets/images/google_icon.png
     - assets/images/vk_icon.png
     - assets/images/instagram_icon.png
     - assets/images/telegram_icon.png
     - assets/images/whatsapp_icon.png
     - assets/images/email_icon.png
-    - assets/images/New.jpg
-    - assets/images/Bouquet.jpg
-    - assets/images/Basket.jpg
 
   fonts:
     - family: Montserrat

@@ -1,6 +1,8 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:orlove_app/http/product_controller.dart';
+import 'package:orlove_app/models/favorites_model.dart';
+import 'package:provider/provider.dart';
 import 'package:orlove_app/storage/storage.dart';
 import 'package:orlove_app/utils/utils.dart';
 
@@ -38,10 +40,11 @@ class ProductPicturesCarouselWidget extends StatefulWidget {
 
 class ProductPicturesCarouselWidgetState
     extends State<ProductPicturesCarouselWidget> {
-  bool isFavourite;
+  bool isFavorite = false;
   int currIndex = 0;
 
-  Future _onHeartPressed(BuildContext context) async {
+  Future _onHeartPressed(
+      BuildContext context, FavoritesModel favoritesModel) async {
     if (!SecureStorage.isLogged) {
       showDialog(
         context: context,
@@ -61,23 +64,22 @@ class ProductPicturesCarouselWidgetState
       return;
     }
 
-    if (isFavourite) {
-      await ProductController.removeProductFromFavourite(
-              widget.productInfo["id"])
-          .then((value) {
-        setState(() {});
-      });
+    if (isFavorite) {
+      await favoritesModel.removeFavorite(widget.productInfo["id"]);
     } else {
-      await ProductController.addProductToFavourite(widget.productInfo["id"])
-          .then((value) {
-        setState(() {});
-      });
+      await favoritesModel.addNewFavorite(widget.productInfo["id"]);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    isFavourite = Utils.isProductFavouriteById(widget.productInfo["id"]);
+    FavoritesModel favoritesModel = context.watch<FavoritesModel>();
+    favoritesModel.isFavorite(widget.productInfo["id"]).then((value) {
+      setState(() {
+        isFavorite = value;
+      });
+    });
+
     final mediaQuery = MediaQuery.of(context);
 
     return Container(
@@ -86,34 +88,55 @@ class ProductPicturesCarouselWidgetState
           Container(
             child: Column(
               children: [
-                CarouselSlider(
-                  options: CarouselOptions(
-                    height: mediaQuery.size.height / 2,
-                    viewportFraction: 1.0,
-                    initialPage: 0,
-                    enableInfiniteScroll: false,
-                    autoPlay: true,
-                    autoPlayInterval: Duration(seconds: 5),
-                    autoPlayAnimationDuration: Duration(milliseconds: 800),
-                    pauseAutoPlayOnTouch: true,
-                    scrollDirection: Axis.horizontal,
-                    onPageChanged: (index, reason) {
-                      setState(() {
-                        currIndex = index;
-                      });
-                    },
-                  ),
-                  items: widget.productPics.map(
-                    (elem) {
-                      return Builder(
-                        builder: (BuildContext ctx) {
-                          return ProductPictureWidget(
-                            picData: elem,
+                Stack(
+                  alignment: AlignmentDirectional.bottomEnd,
+                  children: [
+                    CarouselSlider(
+                      options: CarouselOptions(
+                        height: mediaQuery.size.height / 2,
+                        viewportFraction: 1.0,
+                        initialPage: 0,
+                        enableInfiniteScroll: false,
+                        autoPlay: true,
+                        autoPlayInterval: Duration(seconds: 5),
+                        autoPlayAnimationDuration: Duration(milliseconds: 800),
+                        pauseAutoPlayOnTouch: true,
+                        scrollDirection: Axis.horizontal,
+                        onPageChanged: (index, reason) {
+                          setState(() {
+                            currIndex = index;
+                          });
+                        },
+                      ),
+                      items: widget.productPics.map(
+                        (elem) {
+                          return Builder(
+                            builder: (BuildContext ctx) {
+                              return ProductPictureWidget(
+                                picData: elem,
+                              );
+                            },
                           );
                         },
-                      );
-                    },
-                  ).toList(),
+                      ).toList(),
+                    ),
+                    GestureDetector(
+                      onTap: () => _onHeartPressed(context, favoritesModel),
+                      child: Container(
+                        margin: const EdgeInsets.only(
+                          right: 5.0,
+                          bottom: 5.0,
+                        ),
+                        child: Icon(
+                          isFavorite
+                              ? Icons.favorite_rounded
+                              : Icons.favorite_outline_rounded,
+                          color: isFavorite ? Color(0xFFFFB9C2) : Colors.white,
+                          size: 45.0,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -151,21 +174,6 @@ class ProductPicturesCarouselWidgetState
                 Icons.arrow_back_rounded,
                 size: 40.0,
                 color: Colors.white,
-              ),
-            ),
-          ),
-          Container(
-            margin: EdgeInsets.only(
-              left: mediaQuery.size.width - 50.0,
-              top: 10.0,
-            ),
-            child: GestureDetector(
-              //onTap: () => _onHeartPressed(context),
-              onTap: () {},
-              child: Icon(
-                isFavourite ? Icons.favorite : Icons.favorite_border_outlined,
-                color: isFavourite ? Colors.red : Colors.white,
-                size: 35.0,
               ),
             ),
           ),

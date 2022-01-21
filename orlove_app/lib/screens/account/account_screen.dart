@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/screens/account/account_contacts_screen.dart';
 import 'package:orlove_app/screens/account/account_password_change_screen.dart';
@@ -9,16 +10,46 @@ import 'package:orlove_app/screens/components/app_bar.dart';
 import 'package:orlove_app/screens/components/bottom_navigation_bar.dart';
 import 'package:orlove_app/screens/components/social_buttons.dart';
 import 'package:orlove_app/screens/home/home_screen.dart';
+import 'package:orlove_app/screens/signin/signin_screen.dart';
 import 'package:orlove_app/storage/storage.dart';
 
 class AccountScreen extends StatelessWidget {
-  void _logout(BuildContext context) {
-    SecureStorage.isLogged = false;
-    Navigator.of(context).pushAndRemoveUntil(
-      CupertinoPageRoute(
-        builder: (_) => HomeScreen(),
-      ),
-      (route) => false,
+  Future _logout(BuildContext context) async {
+    if (!SecureStorage.isLogged) {
+      Fluttertoast.showToast(
+        msg: "Сначала войдите в аккаунт",
+        fontSize: 16.0,
+      );
+      return;
+    }
+
+    return showDialog(
+      context: context,
+      builder: (BuildContext ctx) {
+        return CupertinoAlertDialog(
+          title: Text("Вы уверены?"),
+          actions: [
+            CupertinoDialogAction(
+              child: Text("Нет"),
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+            ),
+            CupertinoDialogAction(
+              child: Text("Выйти"),
+              onPressed: () {
+                SecureStorage.isLogged = false;
+                Navigator.of(ctx).pushAndRemoveUntil(
+                  CupertinoPageRoute(
+                    builder: (_) => HomeScreen(),
+                  ),
+                  (route) => false,
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -55,21 +86,31 @@ class AccountScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   GestureDetector(
-                    onTap: () => Navigator.of(context).push(
-                      CupertinoPageRoute(
-                        builder: (_) => OrdersScreen(),
-                      ),
-                    ),
+                    onTap: () {
+                      if (!SecureStorage.isLogged) {
+                        Fluttertoast.showToast(
+                          msg: "Сначала войдите в аккаунт",
+                          fontSize: 16.0,
+                        );
+                        return;
+                      }
+
+                      Navigator.of(context).push(
+                        CupertinoPageRoute(
+                          builder: (_) => OrdersScreen(),
+                        ),
+                      );
+                    },
                     child: Container(
                       width: mediaQuery.size.width * 0.40,
                       height: mediaQuery.size.height * 0.15,
                       decoration: BoxDecoration(
                         border: Border.all(
                           color: ProjectConstants.DEFAULT_STROKE_COLOR,
-                          width: 2.0,
+                          width: 0.3,
                         ),
                         borderRadius: BorderRadius.all(
-                          Radius.circular(8.0),
+                          Radius.circular(4.0),
                         ),
                       ),
                       child: Column(
@@ -78,7 +119,7 @@ class AccountScreen extends StatelessWidget {
                           Icon(
                             Icons.list_alt_rounded,
                             color: ProjectConstants.APP_FONT_COLOR,
-                            size: 40.0,
+                            size: 30.0,
                           ),
                           Text(
                             "Заказы и возврат",
@@ -99,10 +140,10 @@ class AccountScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       border: Border.all(
                         color: ProjectConstants.DEFAULT_STROKE_COLOR,
-                        width: 2.0,
+                        width: 0.3,
                       ),
                       borderRadius: BorderRadius.all(
-                        Radius.circular(8.0),
+                        Radius.circular(4.0),
                       ),
                     ),
                     child: Column(
@@ -111,7 +152,7 @@ class AccountScreen extends StatelessWidget {
                         Icon(
                           Icons.wallet_giftcard_rounded,
                           color: ProjectConstants.APP_FONT_COLOR,
-                          size: 40.0,
+                          size: 30.0,
                         ),
                         Text(
                           "Бонусы",
@@ -139,21 +180,31 @@ class AccountScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   GestureDetector(
-                    onTap: () => Navigator.of(context).push(
-                      CupertinoPageRoute(
-                        builder: (_) => AccountPersonalInfoScreen(),
-                      ),
-                    ),
+                    onTap: () {
+                      if (!SecureStorage.isLogged) {
+                        Fluttertoast.showToast(
+                          msg: "Сначала войдите в аккаунт",
+                          fontSize: 16.0,
+                        );
+                        return;
+                      }
+
+                      Navigator.of(context).push(
+                        CupertinoPageRoute(
+                          builder: (_) => AccountPersonalInfoScreen(),
+                        ),
+                      );
+                    },
                     child: Container(
                       width: mediaQuery.size.width * 0.40,
                       height: mediaQuery.size.height * 0.15,
                       decoration: BoxDecoration(
                         border: Border.all(
                           color: ProjectConstants.DEFAULT_STROKE_COLOR,
-                          width: 2.0,
+                          width: 0.3,
                         ),
                         borderRadius: BorderRadius.all(
-                          Radius.circular(8.0),
+                          Radius.circular(4.0),
                         ),
                       ),
                       child: Column(
@@ -162,7 +213,7 @@ class AccountScreen extends StatelessWidget {
                           Icon(
                             Icons.account_box_outlined,
                             color: ProjectConstants.APP_FONT_COLOR,
-                            size: 40.0,
+                            size: 30.0,
                           ),
                           Text(
                             "Личные данные",
@@ -178,21 +229,31 @@ class AccountScreen extends StatelessWidget {
                     ),
                   ),
                   GestureDetector(
-                    onTap: () => Navigator.of(context).push(
-                      CupertinoPageRoute(
-                        builder: (_) => AccountPasswordChangeScreen(),
-                      ),
-                    ),
+                    onTap: () {
+                      if (!SecureStorage.isLogged) {
+                        Fluttertoast.showToast(
+                          msg: "Сначала войдите в аккаунт",
+                          fontSize: 16.0,
+                        );
+                        return;
+                      }
+
+                      Navigator.of(context).push(
+                        CupertinoPageRoute(
+                          builder: (_) => AccountPasswordChangeScreen(),
+                        ),
+                      );
+                    },
                     child: Container(
                       width: mediaQuery.size.width * 0.40,
                       height: mediaQuery.size.height * 0.15,
                       decoration: BoxDecoration(
                         border: Border.all(
                           color: ProjectConstants.DEFAULT_STROKE_COLOR,
-                          width: 2.0,
+                          width: 0.3,
                         ),
                         borderRadius: BorderRadius.all(
-                          Radius.circular(8.0),
+                          Radius.circular(4.0),
                         ),
                       ),
                       child: Column(
@@ -201,7 +262,7 @@ class AccountScreen extends StatelessWidget {
                           Icon(
                             Icons.vpn_key_outlined,
                             color: ProjectConstants.APP_FONT_COLOR,
-                            size: 40.0,
+                            size: 30.0,
                           ),
                           Text(
                             "Изменить пароль",
@@ -262,9 +323,8 @@ class AccountScreen extends StatelessWidget {
                       ),
                     ),
                     Icon(
-                      Icons.arrow_forward_sharp,
+                      Icons.arrow_forward_ios_rounded,
                       color: ProjectConstants.APP_FONT_COLOR,
-                      size: 28.0,
                     ),
                   ],
                 ),
@@ -275,7 +335,7 @@ class AccountScreen extends StatelessWidget {
             ),
             Divider(
               color: ProjectConstants.DEFAULT_STROKE_COLOR,
-              thickness: 1.0,
+              thickness: 0.3,
               indent: 15,
               endIndent: 15,
             ),
@@ -301,9 +361,8 @@ class AccountScreen extends StatelessWidget {
                       ),
                     ),
                     Icon(
-                      Icons.arrow_forward_sharp,
+                      Icons.arrow_forward_ios_rounded,
                       color: ProjectConstants.APP_FONT_COLOR,
-                      size: 28.0,
                     ),
                   ],
                 ),
@@ -314,7 +373,7 @@ class AccountScreen extends StatelessWidget {
             ),
             Divider(
               color: ProjectConstants.DEFAULT_STROKE_COLOR,
-              thickness: 1.0,
+              thickness: 0.3,
               indent: 15,
               endIndent: 15,
             ),
@@ -344,9 +403,8 @@ class AccountScreen extends StatelessWidget {
                       ),
                     ),
                     Icon(
-                      Icons.arrow_forward_sharp,
+                      Icons.arrow_forward_ios_rounded,
                       color: ProjectConstants.APP_FONT_COLOR,
-                      size: 28.0,
                     ),
                   ],
                 ),
@@ -357,7 +415,7 @@ class AccountScreen extends StatelessWidget {
             ),
             Divider(
               color: ProjectConstants.DEFAULT_STROKE_COLOR,
-              thickness: 1.0,
+              thickness: 0.3,
               indent: 15,
               endIndent: 15,
             ),
@@ -383,9 +441,8 @@ class AccountScreen extends StatelessWidget {
                       ),
                     ),
                     Icon(
-                      Icons.arrow_forward_sharp,
+                      Icons.arrow_forward_ios_rounded,
                       color: ProjectConstants.APP_FONT_COLOR,
-                      size: 28.0,
                     ),
                   ],
                 ),
@@ -396,7 +453,7 @@ class AccountScreen extends StatelessWidget {
             ),
             Divider(
               color: ProjectConstants.DEFAULT_STROKE_COLOR,
-              thickness: 1.0,
+              thickness: 0.3,
               indent: 15,
               endIndent: 15,
             ),
@@ -422,9 +479,8 @@ class AccountScreen extends StatelessWidget {
                       ),
                     ),
                     Icon(
-                      Icons.arrow_forward_sharp,
+                      Icons.arrow_forward_ios_rounded,
                       color: ProjectConstants.APP_FONT_COLOR,
-                      size: 28.0,
                     ),
                   ],
                 ),
@@ -435,7 +491,7 @@ class AccountScreen extends StatelessWidget {
             ),
             Divider(
               color: ProjectConstants.DEFAULT_STROKE_COLOR,
-              thickness: 1.0,
+              thickness: 0.3,
               indent: 15,
               endIndent: 15,
             ),
@@ -461,9 +517,8 @@ class AccountScreen extends StatelessWidget {
                       ),
                     ),
                     Icon(
-                      Icons.arrow_forward_sharp,
+                      Icons.arrow_forward_ios_rounded,
                       color: ProjectConstants.APP_FONT_COLOR,
-                      size: 28.0,
                     ),
                   ],
                 ),
@@ -478,18 +533,75 @@ class AccountScreen extends StatelessWidget {
     );
   }
 
+  Widget _getSigninButton(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+
+    if (!SecureStorage.isLogged) {
+      return GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            CupertinoPageRoute(
+              builder: (_) => SignInScreen(),
+            ),
+          );
+        },
+        child: Center(
+          child: Container(
+            height: 50,
+            width: mediaQuery.size.width / 1.3,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(1.0)),
+              color: ProjectConstants.BUTTON_BACKGROUND_COLOR,
+            ),
+            child: Center(
+              child: Text(
+                "Войти/зарегистрироваться",
+                style: TextStyle(
+                  fontSize: 18 * mediaQuery.textScaleFactor,
+                  fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                  color: ProjectConstants.BUTTON_TEXT_COLOR,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Container();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,
-        body: _getBodyWidget(context),
-        appBar: getAppBar(context),
-        bottomNavigationBar: getBottomNavigationBar(
-          context,
-          isAccount: true,
-        ),
-      ),
+    return Scaffold(
+      backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,
+      body: _getBodyWidget(context),
+      appBar: getAppBar(context),
+      bottomNavigationBar: SecureStorage.isLogged
+          ? getBottomNavigationBar(
+              context,
+              isAccount: true,
+            )
+          : Container(
+              height: 163,
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.only(
+                      top: 10,
+                      bottom: 10,
+                    ),
+                    child: _getSigninButton(context),
+                  ),
+                  getBottomNavigationBar(
+                    context,
+                    isAccount: true,
+                  ),
+                ],
+              ),
+            ),
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:bottom_loader/bottom_loader.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/http/cart_controller.dart';
@@ -28,6 +29,8 @@ class _OrderFormationShippmentComponentsWidgetState
 
   bool _isCourierSelected = true;
   bool _isPickupSelected = false;
+
+  DateTime selectedDate = null;
 
   Widget _getStreetInputWidget(MediaQueryData mediaQuery) {
     return TextFormField(
@@ -219,6 +222,19 @@ class _OrderFormationShippmentComponentsWidgetState
       return;
     }
 
+    if (selectedDate == null) {
+      Fluttertoast.showToast(msg: "Пожалуйста, выберите дату");
+      return;
+    }
+
+    if (_isCourierSelected &&
+        (_streetTextController.text.isEmpty ||
+            _houseNumTextController.text.isEmpty ||
+            _roomTextController.text.isEmpty)) {
+      Fluttertoast.showToast(msg: "Пожалуйста, заполните данные о доставке");
+      return;
+    }
+
     if (!bottomLoader.isShowing()) {
       bottomLoader.display();
     }
@@ -240,6 +256,7 @@ class _OrderFormationShippmentComponentsWidgetState
       _roomTextController.text,
       _commentTextController.text,
       _isCourierSelected ? "courier" : "pickup",
+      selectedDate,
     );
     await CartController.increaseCartStatus();
     await Utils.getAllCartInfo();
@@ -391,6 +408,20 @@ class _OrderFormationShippmentComponentsWidgetState
     );
   }
 
+  _selectDate(BuildContext context) async {
+    final DateTime picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate != null ? selectedDate : DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2025),
+    );
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     bottomLoader = getBottomLoader(context);
@@ -408,7 +439,26 @@ class _OrderFormationShippmentComponentsWidgetState
       _isPickupSelected = !_isCourierSelected;
     }
 
+    print(selectedDate);
+
     final mediaQuery = MediaQuery.of(context);
+
+    Widget dateTextWidget = selectedDate != null
+        ? Container(
+            margin: const EdgeInsets.symmetric(
+              horizontal: 10.0,
+            ),
+            child: Text(
+              "Вы выбрали дату: ${selectedDate.toString().split(' ')[0]}",
+              style: TextStyle(
+                fontSize: 16 * mediaQuery.textScaleFactor,
+                fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                color: ProjectConstants.APP_FONT_COLOR,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          )
+        : Container();
 
     var children = <Widget>[
       SizedBox(
@@ -446,7 +496,47 @@ class _OrderFormationShippmentComponentsWidgetState
       ),
       _getPickupWidget(context),
       SizedBox(
-        height: 20.0,
+        height: 15.0,
+      ),
+      dateTextWidget,
+      SizedBox(
+        height: 5.0,
+      ),
+      GestureDetector(
+        onTap: () => _selectDate(context),
+        child: Center(
+          child: Container(
+            height: 50,
+            width: mediaQuery.size.width / 1.5,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(1.0)),
+              color: ProjectConstants.BUTTON_BACKGROUND_COLOR,
+            ),
+            child: Center(
+              child: Text(
+                "Выберите дату",
+                style: TextStyle(
+                  fontSize: 18 * mediaQuery.textScaleFactor,
+                  fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                  color: ProjectConstants.BUTTON_TEXT_COLOR,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+      SizedBox(
+        height: 10.0,
+      ),
+      Divider(
+        color: ProjectConstants.DEFAULT_STROKE_COLOR,
+        thickness: 1.0,
+        indent: 20.0,
+        endIndent: 20.0,
+      ),
+      SizedBox(
+        height: 10.0,
       ),
       GestureDetector(
         onTap: () => _onConfirmButtonPressed(context),
@@ -526,7 +616,7 @@ class _OrderFormationShippmentComponentsWidgetState
           ),
         ),
         SizedBox(
-          height: 10.0,
+          height: 5.0,
         ),
       ]);
     }
