@@ -3,11 +3,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/http/cart_controller.dart';
+import 'package:orlove_app/models/cart_model.dart';
 import 'package:orlove_app/screens/cart/cart_card_components.dart';
 import 'package:orlove_app/screens/components/bottom_loader.dart';
 import 'package:orlove_app/screens/order_formation/order_formation_receiver_screen.dart';
 import 'package:orlove_app/storage/storage.dart';
 import 'package:orlove_app/utils/utils.dart';
+import 'package:provider/provider.dart';
 
 final String cart_icon_tag = "cart-icon-tag";
 
@@ -58,6 +60,8 @@ class CartIconWidget extends StatefulWidget {
 }
 
 class CartIconWidgetState extends State<CartIconWidget> {
+  CartFullInfoDTO curCartFullInfo = null;
+
   void _onPressed(BuildContext context) {
     Navigator.of(context).push(
       HeroDialogRoute(
@@ -79,6 +83,7 @@ class CartIconWidgetState extends State<CartIconWidget> {
           color: Colors.white,
         ),
         child: Material(
+          type: MaterialType.transparency,
           child: IconButton(
             icon: Icon(
               Icons.shopping_bag_outlined,
@@ -91,11 +96,17 @@ class CartIconWidgetState extends State<CartIconWidget> {
       ),
     );
 
-    if (SecureStorage.isLogged && SecureStorage.cartFullInfo != null) {
+    CartModel cartModel = context.watch<CartModel>();
+    cartModel.getCartFullInfo().then((value) {
+      setState(() {
+        curCartFullInfo = value;
+      });
+    });
+
+    if (SecureStorage.isLogged && curCartFullInfo != null) {
       int numOfProducts = 0;
-      for (dynamic productInfo in SecureStorage.cartFullInfo["allProducts"]
-          ["products"]) {
-        numOfProducts += productInfo["amount"];
+      for (ProductInCartDTO productInfo in curCartFullInfo.products) {
+        numOfProducts += productInfo.amount;
       }
       if (numOfProducts > 0) {
         children.add(
@@ -159,13 +170,12 @@ class CartCard extends StatefulWidget {
 
 class CartCardState extends State<CartCard> {
   BottomLoader bottomLoader;
+  CartFullInfoDTO curCartFullInfo = null;
 
   Widget _getProductsCardsListWidget() {
     var children = <Widget>[];
 
-    for (int i = 0;
-        i < SecureStorage.cartFullInfo["allProducts"]["products"].length;
-        i++) {
+    for (int i = 0; i < curCartFullInfo.products.length; i++) {
       children.add(
         ProductCardInCartCard(
           productIndexInCartArray: i,
@@ -182,13 +192,14 @@ class CartCardState extends State<CartCard> {
     );
   }
 
-  Future _onConfirmButtonPressed() async {
-    if (SecureStorage.cartFullInfo["status"] == "Default") {
+  Future _onConfirmButtonPressed(CartModel cartModel) async {
+    if (curCartFullInfo.status == "Default") {
       if (!bottomLoader.isShowing()) {
         bottomLoader.display();
       }
 
       await CartController.increaseCartStatus();
+      await cartModel.updateCartFullInfo();
 
       if (bottomLoader.isShowing()) {
         bottomLoader.close();
@@ -204,9 +215,17 @@ class CartCardState extends State<CartCard> {
   }
 
   Widget _getBodyWidget(MediaQueryData mediaQuery) {
+    CartModel cartModel = context.watch<CartModel>();
+
+    cartModel.getCartFullInfo().then((value) {
+      setState(() {
+        curCartFullInfo = value;
+      });
+    });
+
     if (!SecureStorage.isLogged ||
-        SecureStorage.cartFullInfo == null ||
-        SecureStorage.cartFullInfo["allProducts"]["products"].length == 0) {
+        curCartFullInfo == null ||
+        curCartFullInfo.products.length == 0) {
       return Container(
         child: LayoutBuilder(
           builder: (ctx, BoxConstraints constraints) {
@@ -332,7 +351,7 @@ class CartCardState extends State<CartCard> {
                             ),
                           ),
                           Text(
-                            "${Utils.getPriceCorrectString(SecureStorage.cartFullInfo["price"].round())} Руб.",
+                            "${Utils.getPriceCorrectString(curCartFullInfo.price.round())} Руб.",
                             style: TextStyle(
                               fontSize: 14 * mediaQuery.textScaleFactor,
                               fontFamily: ProjectConstants.APP_FONT_FAMILY,
@@ -349,7 +368,7 @@ class CartCardState extends State<CartCard> {
                     Container(
                       width: constraints.maxWidth / 2.2,
                       child: GestureDetector(
-                        onTap: _onConfirmButtonPressed,
+                        onTap: () => _onConfirmButtonPressed(cartModel),
                         child: Center(
                           child: Container(
                             width: constraints.maxWidth * 0.3,

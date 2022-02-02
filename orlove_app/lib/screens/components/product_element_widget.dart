@@ -19,6 +19,7 @@ class ProductsListElementWidget extends StatefulWidget {
 
 class _ProductsListElementWidgetState extends State<ProductsListElementWidget> {
   bool isFavorite = false;
+  bool isLoading = true;
 
   Future _onHeartPressed(
       BuildContext context, FavoritesModel favoritesModel) async {

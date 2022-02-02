@@ -5,10 +5,11 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/http/cart_controller.dart';
+import 'package:orlove_app/models/cart_model.dart';
 import 'package:orlove_app/screens/components/bottom_loader.dart';
 import 'package:orlove_app/screens/order_formation/order_formation_payment_screen.dart';
-import 'package:orlove_app/storage/storage.dart';
 import 'package:orlove_app/utils/utils.dart';
+import 'package:provider/provider.dart';
 
 class OrderFormationShippmentComponentsWidget extends StatefulWidget {
   @override
@@ -32,6 +33,8 @@ class _OrderFormationShippmentComponentsWidgetState
 
   DateTime selectedDate = null;
 
+  CartFullInfoDTO curCartFullInfo = null;
+
   Widget _getStreetInputWidget(MediaQueryData mediaQuery) {
     return TextFormField(
       keyboardType: TextInputType.text,
@@ -50,11 +53,7 @@ class _OrderFormationShippmentComponentsWidgetState
           fontSize: 15 * mediaQuery.textScaleFactor,
           fontWeight: FontWeight.w600,
         ),
-        border: UnderlineInputBorder(
-          borderSide: BorderSide(
-            color: ProjectConstants.DEFAULT_STROKE_COLOR,
-          ),
-        ),
+        border: InputBorder.none,
         errorStyle: TextStyle(
           color: Colors.redAccent,
         ),
@@ -93,11 +92,7 @@ class _OrderFormationShippmentComponentsWidgetState
           fontSize: 15 * mediaQuery.textScaleFactor,
           fontWeight: FontWeight.w600,
         ),
-        border: UnderlineInputBorder(
-          borderSide: BorderSide(
-            color: ProjectConstants.DEFAULT_STROKE_COLOR,
-          ),
-        ),
+        border: InputBorder.none,
         errorStyle: TextStyle(
           color: Colors.redAccent,
         ),
@@ -136,11 +131,7 @@ class _OrderFormationShippmentComponentsWidgetState
           fontSize: 15 * mediaQuery.textScaleFactor,
           fontWeight: FontWeight.w600,
         ),
-        border: UnderlineInputBorder(
-          borderSide: BorderSide(
-            color: ProjectConstants.DEFAULT_STROKE_COLOR,
-          ),
-        ),
+        border: InputBorder.none,
         errorStyle: TextStyle(
           color: Colors.redAccent,
         ),
@@ -172,18 +163,14 @@ class _OrderFormationShippmentComponentsWidgetState
         fontWeight: FontWeight.w600,
       ),
       decoration: InputDecoration(
-        hintText: "Комментарий*",
+        hintText: "Комментарий",
         hintStyle: TextStyle(
           color: ProjectConstants.APP_FONT_COLOR,
           fontFamily: ProjectConstants.APP_FONT_FAMILY,
           fontSize: 15 * mediaQuery.textScaleFactor,
           fontWeight: FontWeight.w600,
         ),
-        border: UnderlineInputBorder(
-          borderSide: BorderSide(
-            color: ProjectConstants.DEFAULT_STROKE_COLOR,
-          ),
-        ),
+        border: InputBorder.none,
         errorStyle: TextStyle(
           color: Colors.redAccent,
         ),
@@ -198,13 +185,11 @@ class _OrderFormationShippmentComponentsWidgetState
           ),
         ),
       ),
-      validator: RequiredValidator(
-        errorText: "Это поле обязательно к заполнению",
-      ),
     );
   }
 
-  Future _onConfirmButtonPressed(BuildContext context) async {
+  Future _onConfirmButtonPressed(
+      BuildContext context, CartModel cartModel) async {
     if (!_isCourierSelected && !_isPickupSelected) {
       showDialog(
         context: context,
@@ -259,7 +244,7 @@ class _OrderFormationShippmentComponentsWidgetState
       selectedDate,
     );
     await CartController.increaseCartStatus();
-    await Utils.getAllCartInfo();
+    await cartModel.updateCartFullInfo();
 
     if (bottomLoader.isShowing()) {
       bottomLoader.close();
@@ -409,15 +394,76 @@ class _OrderFormationShippmentComponentsWidgetState
   }
 
   _selectDate(BuildContext context) async {
-    final DateTime picked = await showDatePicker(
+    MediaQueryData mediaQuery = MediaQuery.of(context);
+    DateTime pickedDate = await showModalBottomSheet<DateTime>(
       context: context,
-      initialDate: selectedDate != null ? selectedDate : DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2025),
+      builder: (context) {
+        DateTime tmpPickedDate;
+        return Container(
+          height: mediaQuery.size.height / 4,
+          width: mediaQuery.size.width,
+          child: Column(
+            children: <Widget>[
+              Container(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    CupertinoButton(
+                      child: Text(
+                        'Отмена',
+                        style: TextStyle(
+                          fontSize: 14 * mediaQuery.textScaleFactor,
+                          fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                          color: ProjectConstants.BUTTON_TEXT_COLOR,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    CupertinoButton(
+                      child: Text(
+                        'Готово',
+                        style: TextStyle(
+                          fontSize: 14 * mediaQuery.textScaleFactor,
+                          fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                          color: ProjectConstants.BUTTON_TEXT_COLOR,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).pop(tmpPickedDate);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              Divider(
+                height: 0,
+                thickness: 1,
+              ),
+              Expanded(
+                child: Container(
+                  child: CupertinoDatePicker(
+                    mode: CupertinoDatePickerMode.date,
+                    initialDateTime:
+                        selectedDate != null ? selectedDate : DateTime.now(),
+                    onDateTimeChanged: (DateTime dateTime) {
+                      tmpPickedDate = dateTime;
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
-    if (picked != null && picked != selectedDate) {
+
+    if (pickedDate != null && pickedDate != selectedDate) {
       setState(() {
-        selectedDate = picked;
+        selectedDate = pickedDate;
       });
     }
   }
@@ -425,21 +471,27 @@ class _OrderFormationShippmentComponentsWidgetState
   @override
   Widget build(BuildContext context) {
     bottomLoader = getBottomLoader(context);
+    CartModel cartModel = context.watch<CartModel>();
+    cartModel.getCartFullInfo().then((value) {
+      setState(() {
+        curCartFullInfo = value;
+      });
+    });
 
-    if (SecureStorage.cartFullInfo["receiverStreet"] != "") {
-      _streetTextController.text = SecureStorage.cartFullInfo["receiverStreet"];
-      _houseNumTextController.text =
-          SecureStorage.cartFullInfo["receiverHouseNum"];
-      _roomTextController.text =
-          SecureStorage.cartFullInfo["receiverApartmentNum"];
-      _commentTextController.text =
-          SecureStorage.cartFullInfo["deliveryComment"];
-      _isCourierSelected =
-          SecureStorage.cartFullInfo["deliveryMethod"] == "courier";
-      _isPickupSelected = !_isCourierSelected;
+    if (curCartFullInfo == null) {
+      return Center(
+        child: CircularProgressIndicator(),
+      );
     }
 
-    print(selectedDate);
+    if (curCartFullInfo.receiverStreet != "") {
+      _streetTextController.text = curCartFullInfo.receiverStreet;
+      _houseNumTextController.text = curCartFullInfo.receiverHouseNum;
+      _roomTextController.text = curCartFullInfo.receiverApartmentNum;
+      _commentTextController.text = curCartFullInfo.deliveryComment;
+      _isCourierSelected = curCartFullInfo.deliveryMethod == "courier";
+      _isPickupSelected = !_isCourierSelected;
+    }
 
     final mediaQuery = MediaQuery.of(context);
 
@@ -449,9 +501,9 @@ class _OrderFormationShippmentComponentsWidgetState
               horizontal: 10.0,
             ),
             child: Text(
-              "Вы выбрали дату: ${selectedDate.toString().split(' ')[0]}",
+              "Дата выдачи(доставки) заказа: ${selectedDate.day} ${Utils.getMonthStringFromNumber(selectedDate.month)} ${selectedDate.year}",
               style: TextStyle(
-                fontSize: 16 * mediaQuery.textScaleFactor,
+                fontSize: 18 * mediaQuery.textScaleFactor,
                 fontFamily: ProjectConstants.APP_FONT_FAMILY,
                 color: ProjectConstants.APP_FONT_COLOR,
                 fontWeight: FontWeight.w600,
@@ -486,7 +538,6 @@ class _OrderFormationShippmentComponentsWidgetState
         height: 5.0,
       ),
       Divider(
-        color: ProjectConstants.DEFAULT_STROKE_COLOR,
         thickness: 1.0,
         indent: 20.0,
         endIndent: 20.0,
@@ -527,19 +578,10 @@ class _OrderFormationShippmentComponentsWidgetState
         ),
       ),
       SizedBox(
-        height: 10.0,
-      ),
-      Divider(
-        color: ProjectConstants.DEFAULT_STROKE_COLOR,
-        thickness: 1.0,
-        indent: 20.0,
-        endIndent: 20.0,
-      ),
-      SizedBox(
-        height: 10.0,
+        height: 20.0,
       ),
       GestureDetector(
-        onTap: () => _onConfirmButtonPressed(context),
+        onTap: () => _onConfirmButtonPressed(context, cartModel),
         child: Center(
           child: Container(
             height: 50,
@@ -596,20 +638,24 @@ class _OrderFormationShippmentComponentsWidgetState
             child: Column(
               children: [
                 _getStreetInputWidget(mediaQuery),
-                SizedBox(
+                Divider(
                   height: 5.0,
+                  thickness: 1.0,
                 ),
                 _getHouseNumInputWidget(mediaQuery),
-                SizedBox(
+                Divider(
                   height: 5.0,
+                  thickness: 1.0,
                 ),
                 _getRoomNumInputWidget(mediaQuery),
-                SizedBox(
+                Divider(
                   height: 5.0,
+                  thickness: 1.0,
                 ),
                 _getCommentInputWidget(mediaQuery),
-                SizedBox(
+                Divider(
                   height: 5.0,
+                  thickness: 1.0,
                 ),
               ],
             ),

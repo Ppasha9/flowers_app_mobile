@@ -4,8 +4,6 @@ import 'package:orlove_app/screens/account/account_screen.dart';
 import 'package:orlove_app/screens/catalog/calatog_screen.dart';
 import 'package:orlove_app/screens/favourite/favourite_screen.dart';
 import 'package:orlove_app/screens/home/home_screen.dart';
-import 'package:orlove_app/screens/signin/signin_screen.dart';
-import 'package:orlove_app/storage/storage.dart';
 
 Widget getBottomNavigationBar(
   BuildContext context, {
@@ -73,29 +71,29 @@ Widget getBottomNavigationBar(
     items: [
       BottomNavigationBarItem(
         icon: Icon(
-          Icons.home_outlined,
-          color: Color(0xFF989797),
+          isHome ? Icons.home : Icons.home_outlined,
+          color: isHome ? Colors.grey.shade700 : Color(0xFF989797),
         ),
         label: "Главная",
       ),
       BottomNavigationBarItem(
         icon: Icon(
-          Icons.category_outlined,
-          color: Color(0xFF989797),
+          isMenu ? Icons.category : Icons.category_outlined,
+          color: isMenu ? Colors.grey.shade700 : Color(0xFF989797),
         ),
         label: "Каталог",
       ),
       BottomNavigationBarItem(
         icon: Icon(
-          Icons.favorite,
-          color: Color(0xFFFFB9C2),
+          isFavourite ? Icons.favorite : Icons.favorite_border_outlined,
+          color: isFavourite ? Colors.red.shade400 : Color(0xFFFFB9C2),
         ),
         label: "Избранные",
       ),
       BottomNavigationBarItem(
         icon: Icon(
-          Icons.account_circle_outlined,
-          color: Color(0xFF989797),
+          isAccount ? Icons.account_circle : Icons.account_circle_outlined,
+          color: isAccount ? Colors.grey.shade700 : Color(0xFF989797),
         ),
         label: "Профиль",
       ),

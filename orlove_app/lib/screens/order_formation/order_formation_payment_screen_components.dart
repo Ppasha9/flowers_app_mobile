@@ -3,11 +3,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/http/cart_controller.dart';
+import 'package:orlove_app/models/cart_model.dart';
 import 'package:orlove_app/screens/components/bottom_loader.dart';
 import 'package:orlove_app/screens/home/home_screen.dart';
-import 'package:orlove_app/storage/storage.dart';
+import 'package:orlove_app/screens/order_formation/thank_for_order_screen.dart';
 import 'package:orlove_app/utils/utils.dart';
 import 'package:time_machine/time_machine.dart';
+import 'package:provider/provider.dart';
 
 class OrderFormationPaymentComponentsWidget extends StatefulWidget {
   @override
@@ -22,7 +24,10 @@ class _OrderFormationPaymentComponentsWidgetState
   bool _isOnlineSelected = false;
   bool _isCashSelected = true;
 
-  Future _onConfirmButtonPressed(BuildContext context) async {
+  CartFullInfoDTO curCartFullInfo = null;
+
+  Future _onConfirmButtonPressed(
+      BuildContext context, CartModel cartModel) async {
     if (!_isOnlineSelected && !_isCashSelected) {
       showDialog(
         context: context,
@@ -47,7 +52,7 @@ class _OrderFormationPaymentComponentsWidgetState
     await CartController.updatePaymentInfo(_isCashSelected ? "cash" : "online");
     await CartController.increaseCartStatus();
     await CartController.createOrder();
-    await Utils.getAllCartInfo();
+    await cartModel.updateCartFullInfo();
 
     if (bottomLoader.isShowing()) {
       bottomLoader.close();
@@ -55,7 +60,7 @@ class _OrderFormationPaymentComponentsWidgetState
 
     Navigator.of(context).push(
       CupertinoPageRoute(
-        builder: (_) => HomeScreen(),
+        builder: (_) => ThankForOrderScreen(),
       ),
     );
   }
@@ -168,13 +173,12 @@ class _OrderFormationPaymentComponentsWidgetState
     );
   }
 
-  num _getProductPriceWithParameters(dynamic prInfo) {
-    num res = prInfo["info"]["price"];
-    var parameters =
-        prInfo["parameters"] != null ? (prInfo["parameters"] as List) : [];
-    for (dynamic param in parameters) {
-      if (param["parameterPrice"] != null) {
-        res += param["parameterPrice"];
+  num _getProductPriceWithParameters(ProductInCartDTO prInfo) {
+    num res = prInfo.info["price"];
+    var parameters = prInfo.parameters != null ? prInfo.parameters : [];
+    for (ProductParameterDTO param in parameters) {
+      if (param.parameterPrice != null) {
+        res += param.parameterPrice;
       }
     }
 
@@ -182,21 +186,21 @@ class _OrderFormationPaymentComponentsWidgetState
   }
 
   Widget _getProductParametersWidget(
-      MediaQueryData mediaQuery, dynamic prInfo) {
-    var parameters =
-        prInfo["parameters"] != null ? (prInfo["parameters"] as List) : [];
+      MediaQueryData mediaQuery, ProductInCartDTO prInfo) {
+    List<ProductParameterDTO> parameters =
+        prInfo.parameters != null ? prInfo.parameters : [];
     if (parameters == []) {
       return Container();
     }
 
     List<Widget> children = [];
-    parameters.forEach((el) {
+    parameters.forEach((ProductParameterDTO el) {
       children.add(
         Container(
           child: Row(
             children: [
               Text(
-                "${Utils.fromUTF8(el["parameterName"])}: ${Utils.fromUTF8(el["parameterValue"])} (+ ${el["parameterPrice"].round()} Руб.)",
+                "${el.parameterName}: ${el.parameterValue} (+ ${el.parameterPrice.round()} Руб.)",
                 style: TextStyle(
                   fontSize: 12 * mediaQuery.textScaleFactor,
                   fontFamily: ProjectConstants.APP_FONT_FAMILY,
@@ -217,11 +221,14 @@ class _OrderFormationPaymentComponentsWidgetState
     );
   }
 
-  Widget _getProductCardWidget(BuildContext context, dynamic prInfo) {
+  Widget _getProductCardWidget(BuildContext context, ProductInCartDTO prInfo) {
     final mediaQuery = MediaQuery.of(context);
 
     return Container(
       height: mediaQuery.size.height * 0.15,
+      margin: const EdgeInsets.symmetric(
+        vertical: 5.0,
+      ),
       child: LayoutBuilder(
         builder: (ctx, constraints) {
           return Row(
@@ -232,7 +239,7 @@ class _OrderFormationPaymentComponentsWidgetState
                 decoration: BoxDecoration(
                   image: DecorationImage(
                     image: NetworkImage(
-                      prInfo["info"]["pictures"][0]["url"],
+                      prInfo.info["pictures"][0]["url"],
                     ),
                     fit: BoxFit.fill,
                   ),
@@ -253,7 +260,7 @@ class _OrderFormationPaymentComponentsWidgetState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "${Utils.fromUTF8(prInfo["info"]["name"])}\n${Utils.getPriceCorrectString(_getProductPriceWithParameters(prInfo))} Руб.",
+                      "${Utils.fromUTF8(prInfo.info["name"])}\n${Utils.getPriceCorrectString(_getProductPriceWithParameters(prInfo))} Руб.",
                       style: TextStyle(
                         fontSize: 14 * mediaQuery.textScaleFactor,
                         fontFamily: ProjectConstants.APP_FONT_FAMILY,
@@ -263,7 +270,7 @@ class _OrderFormationPaymentComponentsWidgetState
                     ),
                     _getProductParametersWidget(mediaQuery, prInfo),
                     Text(
-                      "Кол-во: ${prInfo["amount"]}",
+                      "Кол-во: ${prInfo.amount}",
                       style: TextStyle(
                         fontSize: 14 * mediaQuery.textScaleFactor,
                         fontFamily: ProjectConstants.APP_FONT_FAMILY,
@@ -282,8 +289,7 @@ class _OrderFormationPaymentComponentsWidgetState
   }
 
   Widget _getProductsListWidget(BuildContext context) {
-    List<dynamic> productsInfosList =
-        SecureStorage.cartFullInfo["allProducts"]["products"];
+    List<ProductInCartDTO> productsInfosList = curCartFullInfo.products;
 
     return Container(
       margin: const EdgeInsets.symmetric(
@@ -308,7 +314,7 @@ class _OrderFormationPaymentComponentsWidgetState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "${Utils.fromUTF8(SecureStorage.cartFullInfo["receiverSurname"])} ${Utils.fromUTF8(SecureStorage.cartFullInfo["receiverName"])}",
+            "${curCartFullInfo.receiverSurname} ${curCartFullInfo.receiverName}",
             style: TextStyle(
               fontSize: 14 * mediaQuery.textScaleFactor,
               fontFamily: ProjectConstants.APP_FONT_FAMILY,
@@ -317,7 +323,7 @@ class _OrderFormationPaymentComponentsWidgetState
             ),
           ),
           Text(
-            "${SecureStorage.cartFullInfo["receiverPhone"]}",
+            "${curCartFullInfo.receiverPhone}",
             style: TextStyle(
               fontSize: 14 * mediaQuery.textScaleFactor,
               fontFamily: ProjectConstants.APP_FONT_FAMILY,
@@ -326,7 +332,7 @@ class _OrderFormationPaymentComponentsWidgetState
             ),
           ),
           Text(
-            "${SecureStorage.cartFullInfo["receiverEmail"]}",
+            "${curCartFullInfo.receiverEmail}",
             style: TextStyle(
               fontSize: 14 * mediaQuery.textScaleFactor,
               fontFamily: ProjectConstants.APP_FONT_FAMILY,
@@ -340,7 +346,9 @@ class _OrderFormationPaymentComponentsWidgetState
   }
 
   Widget _getDeliveryInfoWidget(MediaQueryData mediaQuery) {
-    var dateTime = DateTime.parse(SecureStorage.cartFullInfo["deliveryDate"]);
+    var dateTime = curCartFullInfo.deliveryDate != null
+        ? curCartFullInfo.deliveryDate
+        : DateTime.now();
     var date = OffsetDateTime(new LocalDateTime.dateTime(dateTime), Offset(3));
 
     return Container(
@@ -351,7 +359,7 @@ class _OrderFormationPaymentComponentsWidgetState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            SecureStorage.cartFullInfo["deliveryMethod"] == "courier"
+            curCartFullInfo.deliveryMethod == "courier"
                 ? "Курьером"
                 : "Самовывоз",
             style: TextStyle(
@@ -362,8 +370,8 @@ class _OrderFormationPaymentComponentsWidgetState
             ),
           ),
           Text(
-            SecureStorage.cartFullInfo["deliveryMethod"] == "courier"
-                ? "${Utils.fromUTF8(SecureStorage.cartFullInfo["receiverStreet"])}, д. ${SecureStorage.cartFullInfo["receiverHouseNum"]}, кв. ${SecureStorage.cartFullInfo["receiverApartmentNum"]}"
+            curCartFullInfo.deliveryMethod == "courier"
+                ? "${curCartFullInfo.receiverStreet}, д. ${curCartFullInfo.receiverHouseNum}, кв. ${curCartFullInfo.receiverApartmentNum}"
                 : "Варшавская улица, д. 59",
             style: TextStyle(
               fontSize: 14 * mediaQuery.textScaleFactor,
@@ -387,9 +395,8 @@ class _OrderFormationPaymentComponentsWidgetState
   }
 
   Widget _getFinalPriceWidget(MediaQueryData mediaQuery) {
-    int cartPrice = SecureStorage.cartFullInfo["price"].round();
-    int shippmentPrice =
-        SecureStorage.cartFullInfo["deliveryMethod"] == "courier" ? 300 : 0;
+    int cartPrice = curCartFullInfo.price.round();
+    int shippmentPrice = curCartFullInfo.deliveryMethod == "courier" ? 300 : 0;
 
     return Container(
       margin: const EdgeInsets.symmetric(
@@ -476,6 +483,18 @@ class _OrderFormationPaymentComponentsWidgetState
   Widget build(BuildContext context) {
     bottomLoader = getBottomLoader(context);
     final mediaQuery = MediaQuery.of(context);
+    CartModel cartModel = context.watch<CartModel>();
+    cartModel.getCartFullInfo().then((value) {
+      setState(() {
+        curCartFullInfo = value;
+      });
+    });
+
+    if (curCartFullInfo == null) {
+      return Center(
+        child: CircularProgressIndicator(),
+      );
+    }
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -503,7 +522,6 @@ class _OrderFormationPaymentComponentsWidgetState
         ),
         _getOnlinePaymentWidget(context),
         Divider(
-          color: ProjectConstants.DEFAULT_STROKE_COLOR,
           thickness: 1.0,
           indent: 20.0,
           endIndent: 20.0,
@@ -534,7 +552,6 @@ class _OrderFormationPaymentComponentsWidgetState
         ),
         Divider(
           thickness: 2.0,
-          color: ProjectConstants.DEFAULT_STROKE_COLOR,
         ),
         SizedBox(
           height: 5.0,
@@ -562,7 +579,6 @@ class _OrderFormationPaymentComponentsWidgetState
         ),
         Divider(
           thickness: 2.0,
-          color: ProjectConstants.DEFAULT_STROKE_COLOR,
         ),
         SizedBox(
           height: 5.0,
@@ -590,7 +606,6 @@ class _OrderFormationPaymentComponentsWidgetState
         ),
         Divider(
           thickness: 2.0,
-          color: ProjectConstants.DEFAULT_STROKE_COLOR,
         ),
         SizedBox(
           height: 5.0,
@@ -618,7 +633,6 @@ class _OrderFormationPaymentComponentsWidgetState
         ),
         Divider(
           thickness: 2.0,
-          color: ProjectConstants.DEFAULT_STROKE_COLOR,
         ),
         SizedBox(
           height: 20.0,
@@ -642,7 +656,6 @@ class _OrderFormationPaymentComponentsWidgetState
         ),
         Divider(
           thickness: 2.0,
-          color: ProjectConstants.DEFAULT_STROKE_COLOR,
         ),
         SizedBox(
           height: 5.0,
@@ -653,13 +666,12 @@ class _OrderFormationPaymentComponentsWidgetState
         ),
         Divider(
           thickness: 2.0,
-          color: ProjectConstants.DEFAULT_STROKE_COLOR,
         ),
         SizedBox(
           height: 20.0,
         ),
         GestureDetector(
-          onTap: () => _onConfirmButtonPressed(context),
+          onTap: () => _onConfirmButtonPressed(context, cartModel),
           child: Center(
             child: Container(
               height: 50,

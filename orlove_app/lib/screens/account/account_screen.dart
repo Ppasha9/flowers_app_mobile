@@ -56,7 +56,7 @@ class AccountScreen extends StatelessWidget {
   Widget _getBodyWidget(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
 
-    return SingleChildScrollView(
+    Widget scrollingBodyWidget = SingleChildScrollView(
       child: Container(
         margin: const EdgeInsets.symmetric(
           vertical: 20.0,
@@ -134,36 +134,53 @@ class AccountScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Container(
-                    width: mediaQuery.size.width * 0.40,
-                    height: mediaQuery.size.height * 0.15,
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: ProjectConstants.DEFAULT_STROKE_COLOR,
-                        width: 0.3,
-                      ),
-                      borderRadius: BorderRadius.all(
-                        Radius.circular(4.0),
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.wallet_giftcard_rounded,
-                          color: ProjectConstants.APP_FONT_COLOR,
-                          size: 30.0,
+                  GestureDetector(
+                    onTap: () {
+                      if (!SecureStorage.isLogged) {
+                        Fluttertoast.showToast(
+                          msg: "Сначала войдите в аккаунт",
+                          fontSize: 16.0,
+                        );
+                        return;
+                      }
+
+                      Fluttertoast.showToast(
+                        msg: "Бонусы пока что отсутствуют",
+                        fontSize: 16.0,
+                      );
+                      return;
+                    },
+                    child: Container(
+                      width: mediaQuery.size.width * 0.40,
+                      height: mediaQuery.size.height * 0.15,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: ProjectConstants.DEFAULT_STROKE_COLOR,
+                          width: 0.3,
                         ),
-                        Text(
-                          "Бонусы",
-                          style: TextStyle(
-                            fontSize: 14 * mediaQuery.textScaleFactor,
-                            fontFamily: ProjectConstants.APP_FONT_FAMILY,
-                            fontWeight: FontWeight.w600,
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(4.0),
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.wallet_giftcard_rounded,
                             color: ProjectConstants.APP_FONT_COLOR,
+                            size: 30.0,
                           ),
-                        ),
-                      ],
+                          Text(
+                            "Бонусы",
+                            style: TextStyle(
+                              fontSize: 14 * mediaQuery.textScaleFactor,
+                              fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                              fontWeight: FontWeight.w600,
+                              color: ProjectConstants.APP_FONT_COLOR,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -531,6 +548,42 @@ class AccountScreen extends StatelessWidget {
         ),
       ),
     );
+
+    if (SecureStorage.isLogged) {
+      return scrollingBodyWidget;
+    }
+
+    return Container(
+      height: mediaQuery.size.height,
+      width: mediaQuery.size.width,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Expanded(
+            child: scrollingBodyWidget,
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.shade400,
+                  blurRadius: 8.0,
+                  spreadRadius: 0.0,
+                  offset: Offset(0, 1),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.only(
+              top: 10,
+              bottom: 10,
+            ),
+            child: _getSigninButton(context),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _getSigninButton(BuildContext context) {
@@ -579,29 +632,10 @@ class AccountScreen extends StatelessWidget {
       backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,
       body: _getBodyWidget(context),
       appBar: getAppBar(context),
-      bottomNavigationBar: SecureStorage.isLogged
-          ? getBottomNavigationBar(
-              context,
-              isAccount: true,
-            )
-          : Container(
-              height: 163,
-              child: Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.only(
-                      top: 10,
-                      bottom: 10,
-                    ),
-                    child: _getSigninButton(context),
-                  ),
-                  getBottomNavigationBar(
-                    context,
-                    isAccount: true,
-                  ),
-                ],
-              ),
-            ),
+      bottomNavigationBar: getBottomNavigationBar(
+        context,
+        isAccount: true,
+      ),
     );
   }
 }

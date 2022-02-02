@@ -1,53 +1,113 @@
+import 'package:bottom_loader/bottom_loader.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:orlove_app/constants.dart';
+import 'package:orlove_app/http/auth_controller.dart';
+import 'package:orlove_app/models/cart_model.dart';
+import 'package:orlove_app/models/favorites_model.dart';
+import 'package:orlove_app/screens/components/bottom_loader.dart';
+import 'package:orlove_app/screens/home/home_screen.dart';
 import 'package:orlove_app/screens/signin/signin_input_forms.dart';
+import 'package:provider/provider.dart';
 
-class SignInScreen extends StatelessWidget {
-  // Future _onGoogleSignIn(BuildContext context) async {
-  //   GoogleSignIn googleSignIn = GoogleSignIn(
-  //     scopes: [
-  //       "email",
-  //     ],
-  //   );
+class SignInScreen extends StatefulWidget {
+  @override
+  _SignInScreenState createState() => _SignInScreenState();
+}
 
-  //   googleSignIn.signIn().then((GoogleSignInAccount acc) async {
-  //     GoogleSignInAuthentication auth = await acc.authentication;
+class _SignInScreenState extends State<SignInScreen> {
+  BottomLoader bottomLoader;
 
-  //     print(acc.id);
-  //     print(acc.email);
-  //     print(acc.displayName);
-  //     print(acc.photoUrl);
+  _onGoogleSignIn(
+    BuildContext context,
+    CartModel cartModel,
+    FavoritesModel favoritesModel,
+  ) async {
+    GoogleSignIn googleSignIn = GoogleSignIn(
+      scopes: [
+        "email",
+      ],
+    );
 
-  //     acc.authentication.then((GoogleSignInAuthentication auth) {
-  //       print(auth.accessToken);
-  //       print(auth.idToken);
-  //     });
-  //   }).catchError((err) {
-  //     return showDialog(
-  //       context: context,
-  //       builder: (ctx) => AlertDialog(
-  //         title: Text("Произошла ошибка при авторизации!"),
-  //         content: Text("Неизвестная ошибка"),
-  //         actions: [
-  //           TextButton(
-  //             child: Text("Окей"),
-  //             onPressed: () {
-  //               Navigator.of(ctx).pop();
-  //             },
-  //           ),
-  //         ],
-  //       ),
-  //     );
-  //   });
-  // }
+    googleSignIn.signIn().then((GoogleSignInAccount acc) {
+      acc.authentication.then((GoogleSignInAuthentication auth) async {
+        print(auth.accessToken);
 
-  Widget _getGoogleAuthButton(BuildContext context) {
+        if (!bottomLoader.isShowing()) {
+          bottomLoader.display();
+        }
+
+        var authRes =
+            await AuthController.performGoogleSignIn(auth.accessToken);
+
+        if (!authRes) {
+          if (bottomLoader.isShowing()) {
+            bottomLoader.close();
+          }
+
+          return showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              title: Text("Произошла ошибка при авторизации!"),
+              content: Text(AuthController.lastErrorMsg),
+              actions: [
+                TextButton(
+                  child: Text("Окей"),
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                  },
+                ),
+              ],
+            ),
+          );
+        }
+
+        await cartModel.updateCartFullInfo();
+        await favoritesModel.init();
+
+        if (bottomLoader.isShowing()) {
+          bottomLoader.close();
+        }
+
+        return Navigator.of(context).pushReplacement(
+          CupertinoPageRoute(
+            builder: (_) => HomeScreen(),
+          ),
+        );
+      });
+    }).catchError((err) {
+      return showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text("Произошла ошибка при авторизации!"),
+          content: Text("Неизвестная ошибка: ${err}"),
+          actions: [
+            TextButton(
+              child: Text("Окей"),
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+            ),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _getGoogleAuthButton(
+    BuildContext context,
+    CartModel cartModel,
+    FavoritesModel favoritesModel,
+  ) {
     MediaQueryData mediaQuery = MediaQuery.of(context);
 
     return GestureDetector(
-      //onTap: () => _onGoogleSignIn(context),
-      onTap: () {},
+      onTap: () => _onGoogleSignIn(
+        context,
+        cartModel,
+        favoritesModel,
+      ),
       child: Container(
         width: mediaQuery.size.width * 0.90,
         child: Row(
@@ -131,7 +191,12 @@ class SignInScreen extends StatelessWidget {
     );
   }
 
-  Widget _getBodyWidget(BuildContext context, double appBarHeight) {
+  Widget _getBodyWidget(
+    BuildContext context,
+    double appBarHeight,
+    CartModel cartModel,
+    FavoritesModel favoritesModel,
+  ) {
     final mediaQuery = MediaQuery.of(context);
 
     return SingleChildScrollView(
@@ -162,7 +227,7 @@ class SignInScreen extends StatelessWidget {
               const SizedBox(
                 height: 60,
               ),
-              _getGoogleAuthButton(context),
+              _getGoogleAuthButton(context, cartModel, favoritesModel),
             ],
           ),
         ),
@@ -172,6 +237,10 @@ class SignInScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bottomLoader = getBottomLoader(context);
+    CartModel cartModel = context.watch<CartModel>();
+    FavoritesModel favoritesModel = context.watch<FavoritesModel>();
+
     var appBar = AppBar(
       backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,
       elevation: 0.0,
@@ -187,7 +256,12 @@ class SignInScreen extends StatelessWidget {
     return Scaffold(
       appBar: appBar,
       backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,
-      body: _getBodyWidget(context, appBar.preferredSize.height),
+      body: _getBodyWidget(
+        context,
+        appBar.preferredSize.height,
+        cartModel,
+        favoritesModel,
+      ),
     );
   }
 }

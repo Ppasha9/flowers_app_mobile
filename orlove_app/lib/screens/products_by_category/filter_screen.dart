@@ -320,35 +320,54 @@ class _FilterProductsScreenState extends State<FilterProductsScreen> {
   }
 
   Widget _getPriceWidget(BuildContext context) {
+    double maxPriceDelimeter = 1000;
+    if (widget.maxPrice <= 2500) {
+      maxPriceDelimeter = 250;
+    } else if (widget.maxPrice <= 5000) {
+      maxPriceDelimeter = 500;
+    }
+
     return Column(
       children: [
-        RangeSlider(
-          values: RangeValues(
-              _currPriceRange.start.toDouble(), _currPriceRange.end.toDouble()),
-          min: 0.0,
-          max: widget.maxPrice,
-          activeColor: Color(0xFFD2D1D1),
-          inactiveColor: ProjectConstants.BUTTON_TEXT_COLOR,
-          divisions: (widget.maxPrice / 1000).round(),
-          labels: RangeLabels(
-            _currPriceRange.start.toString(),
-            _currPriceRange.end.toString(),
-          ),
-          onChanged: (RangeValues values) {
-            setState(() {
-              if (values.end - values.start >= 2000) {
-                _currPriceRange = SfRangeValues(values.start, values.end);
-              } else {
-                if (_currPriceRange.start == values.start) {
-                  _currPriceRange =
-                      SfRangeValues(values.start, values.start + 2000);
+        Container(
+          height: MediaQuery.of(context).size.height / 13,
+          child: RangeSlider(
+            values: RangeValues(
+              _currPriceRange.start.toDouble(),
+              _currPriceRange.end.toDouble(),
+            ),
+            min: 0.0,
+            max: widget.maxPrice,
+            activeColor: Color(0xFFD2D1D1),
+            inactiveColor: ProjectConstants.BUTTON_TEXT_COLOR,
+            divisions: (widget.maxPrice / maxPriceDelimeter).round(),
+            labels: RangeLabels(
+              _currPriceRange.start.toString(),
+              _currPriceRange.end.toString(),
+            ),
+            onChanged: (RangeValues values) {
+              setState(() {
+                if (values.end - values.start >= maxPriceDelimeter) {
+                  _currPriceRange = SfRangeValues(
+                    values.start,
+                    values.end,
+                  );
                 } else {
-                  _currPriceRange =
-                      SfRangeValues(values.end - 2000, values.end);
+                  if (_currPriceRange.start == values.start) {
+                    _currPriceRange = SfRangeValues(
+                      values.start,
+                      values.start + maxPriceDelimeter,
+                    );
+                  } else {
+                    _currPriceRange = SfRangeValues(
+                      values.end - maxPriceDelimeter,
+                      values.end,
+                    );
+                  }
                 }
-              }
-            });
-          },
+              });
+            },
+          ),
         ),
         SizedBox(
           height: 10.0,

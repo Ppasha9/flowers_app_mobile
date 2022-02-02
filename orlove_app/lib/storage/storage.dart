@@ -8,6 +8,4 @@ class SecureStorage {
   static String surname;
   static String phone;
   static String email;
-
-  static dynamic cartFullInfo;
 }

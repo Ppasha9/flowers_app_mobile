@@ -4,20 +4,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import 'package:orlove_app/http/auth_controller.dart';
-import 'package:orlove_app/http/cart_controller.dart';
 import 'package:orlove_app/storage/storage.dart';
 
 class Utils {
   static String fromUTF8(String strToDecode) {
     return utf8.decode(strToDecode.toString().codeUnits);
-  }
-
-  static Future getAllCartInfo() async {
-    if (!SecureStorage.isLogged) {
-      return;
-    }
-
-    SecureStorage.cartFullInfo = await CartController.getCartFullInfo();
   }
 
   static Future updateUserInfo() async {
@@ -63,5 +54,34 @@ class Utils {
     }
 
     return res;
+  }
+
+  static String getMonthStringFromNumber(int monthNumber) {
+    switch (monthNumber) {
+      case 1:
+        return "января";
+      case 2:
+        return "февраля";
+      case 3:
+        return "матра";
+      case 4:
+        return "апреля";
+      case 5:
+        return "мая";
+      case 6:
+        return "июня";
+      case 7:
+        return "июля";
+      case 8:
+        return "августа";
+      case 9:
+        return "сентября";
+      case 10:
+        return "октября";
+      case 11:
+        return "ноября";
+      case 12:
+        return "декабря";
+    }
   }
 }

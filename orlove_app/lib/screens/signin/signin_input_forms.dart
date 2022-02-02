@@ -1,13 +1,17 @@
 import 'package:bottom_loader/bottom_loader.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/http/auth_controller.dart';
+import 'package:orlove_app/models/cart_model.dart';
+import 'package:orlove_app/models/favorites_model.dart';
 import 'package:orlove_app/screens/components/bottom_loader.dart';
 import 'package:orlove_app/screens/home/home_screen.dart';
 import 'package:orlove_app/screens/signup/signup_screen.dart';
 import 'package:orlove_app/utils/utils.dart';
+import 'package:provider/provider.dart';
 
 class SignInInputForms extends StatefulWidget {
   @override
@@ -58,9 +62,6 @@ class _SignInInputFormsState extends State<SignInInputForms> {
           RequiredValidator(
             errorText: "Это поле обязательно к заполнению",
           ),
-          EmailValidator(
-            errorText: "Вы ввели неверный почтовый адрес",
-          ),
         ],
       ),
     );
@@ -110,7 +111,11 @@ class _SignInInputFormsState extends State<SignInInputForms> {
     );
   }
 
-  _login(BuildContext context) async {
+  _login(
+    BuildContext context,
+    CartModel cartModel,
+    FavoritesModel favoritesModel,
+  ) async {
     var validateRes = _formKey.currentState.validate();
     if (!validateRes) {
       if (bottomLoader.isShowing()) {
@@ -133,24 +138,14 @@ class _SignInInputFormsState extends State<SignInInputForms> {
         bottomLoader.close();
       }
 
-      return showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: Text("Произошла ошибка при авторизации!"),
-          content: Text(AuthController.lastErrorMsg),
-          actions: [
-            TextButton(
-              child: Text("Окей"),
-              onPressed: () {
-                Navigator.of(ctx).pop();
-              },
-            ),
-          ],
-        ),
+      return Fluttertoast.showToast(
+        msg: "Неверный логин или пароль",
+        fontSize: 16,
       );
     }
 
-    await Utils.getAllCartInfo();
+    await cartModel.updateCartFullInfo();
+    await favoritesModel.init();
 
     if (bottomLoader.isShowing()) {
       bottomLoader.close();
@@ -163,10 +158,18 @@ class _SignInInputFormsState extends State<SignInInputForms> {
     );
   }
 
-  Widget _getButtonWidget(MediaQueryData mediaQuery) {
+  Widget _getButtonWidget(
+    MediaQueryData mediaQuery,
+    CartModel cartModel,
+    FavoritesModel favoritesModel,
+  ) {
     return Center(
       child: GestureDetector(
-        onTap: () => _login(context),
+        onTap: () => _login(
+          context,
+          cartModel,
+          favoritesModel,
+        ),
         child: Container(
           width: mediaQuery.size.width * 0.80,
           height: 45.0,
@@ -193,6 +196,8 @@ class _SignInInputFormsState extends State<SignInInputForms> {
   @override
   Widget build(BuildContext context) {
     bottomLoader = getBottomLoader(context);
+    CartModel cartModel = context.watch<CartModel>();
+    FavoritesModel favoritesModel = context.watch<FavoritesModel>();
 
     final mediaQuery = MediaQuery.of(context);
 
@@ -210,7 +215,11 @@ class _SignInInputFormsState extends State<SignInInputForms> {
             SizedBox(
               height: 35,
             ),
-            _getButtonWidget(mediaQuery),
+            _getButtonWidget(
+              mediaQuery,
+              cartModel,
+              favoritesModel,
+            ),
             SizedBox(
               height: 10.0,
             ),

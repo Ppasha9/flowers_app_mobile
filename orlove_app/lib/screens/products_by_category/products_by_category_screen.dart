@@ -183,15 +183,16 @@ class _ProductsByCategoryScreenState extends State<ProductsByCategoryScreen> {
       if (isFiltering) {
         currDataGroupNum = 1;
         priceRange = SfRangeValues(0, maxPrice);
+        tags = [];
+        flowers = [];
 
         setState(() {
           isOriginalDataRetrieved = false;
         });
 
         _fetchOriginalData();
-      } else {
-        return;
       }
+      return;
     }
 
     setState(() {

@@ -35,7 +35,9 @@ dependencies:
   fluttertoast:
   time_machine:
   build_runner:
-  # google_sign_in: 4.4.4
+  google_sign_in:
+  flutter_masked_text:
+  whatsapp_unilink:
 
 dev_dependencies:
   flutter_test:

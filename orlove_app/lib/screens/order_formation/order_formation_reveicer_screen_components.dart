@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/http/cart_controller.dart';
+import 'package:orlove_app/models/cart_model.dart';
 import 'package:orlove_app/screens/order_formation/order_formation_shippment_screen.dart';
 import 'package:orlove_app/storage/storage.dart';
 import 'package:orlove_app/utils/utils.dart';
+import 'package:provider/provider.dart';
 
 class OrderFormationReceiverContentWidget extends StatefulWidget {
   @override
@@ -43,11 +45,7 @@ class _OrderFormationReceiverContentWidgetState
           fontSize: 15 * mediaQuery.textScaleFactor,
           fontWeight: FontWeight.w600,
         ),
-        border: UnderlineInputBorder(
-          borderSide: BorderSide(
-            color: ProjectConstants.DEFAULT_STROKE_COLOR,
-          ),
-        ),
+        border: InputBorder.none,
         errorStyle: TextStyle(
           color: Colors.redAccent,
         ),
@@ -86,11 +84,7 @@ class _OrderFormationReceiverContentWidgetState
           fontSize: 15 * mediaQuery.textScaleFactor,
           fontWeight: FontWeight.w600,
         ),
-        border: UnderlineInputBorder(
-          borderSide: BorderSide(
-            color: ProjectConstants.DEFAULT_STROKE_COLOR,
-          ),
-        ),
+        border: InputBorder.none,
         errorStyle: TextStyle(
           color: Colors.redAccent,
         ),
@@ -129,11 +123,7 @@ class _OrderFormationReceiverContentWidgetState
           fontSize: 15 * mediaQuery.textScaleFactor,
           fontWeight: FontWeight.w600,
         ),
-        border: UnderlineInputBorder(
-          borderSide: BorderSide(
-            color: ProjectConstants.DEFAULT_STROKE_COLOR,
-          ),
-        ),
+        border: InputBorder.none,
         errorStyle: TextStyle(
           color: Colors.redAccent,
         ),
@@ -172,11 +162,7 @@ class _OrderFormationReceiverContentWidgetState
           fontSize: 15 * mediaQuery.textScaleFactor,
           fontWeight: FontWeight.w600,
         ),
-        border: UnderlineInputBorder(
-          borderSide: BorderSide(
-            color: ProjectConstants.DEFAULT_STROKE_COLOR,
-          ),
-        ),
+        border: InputBorder.none,
         errorStyle: TextStyle(
           color: Colors.redAccent,
         ),
@@ -204,7 +190,8 @@ class _OrderFormationReceiverContentWidgetState
     );
   }
 
-  Future _onConfirmButtonPressed(BuildContext context) async {
+  Future _onConfirmButtonPressed(
+      BuildContext context, CartModel cartModel) async {
     final validateRes = _formKey.currentState.validate();
     if (!validateRes) {
       if (bottomLoader.isShowing()) {
@@ -225,7 +212,7 @@ class _OrderFormationReceiverContentWidgetState
       _phoneTextController.text,
     );
     await CartController.increaseCartStatus();
-    await Utils.getAllCartInfo();
+    await cartModel.updateCartFullInfo();
 
     if (bottomLoader.isShowing()) {
       bottomLoader.close();
@@ -249,6 +236,8 @@ class _OrderFormationReceiverContentWidgetState
 
     final mediaQuery = MediaQuery.of(context);
 
+    CartModel cartModel = context.watch<CartModel>();
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -261,20 +250,24 @@ class _OrderFormationReceiverContentWidgetState
             child: Column(
               children: [
                 _getNameInputWidget(mediaQuery),
-                SizedBox(
+                Divider(
                   height: 5.0,
+                  thickness: 1,
                 ),
                 _getSurnameInputWidget(mediaQuery),
-                SizedBox(
+                Divider(
                   height: 5.0,
+                  thickness: 1,
                 ),
                 _getPhoneInputWidget(mediaQuery),
-                SizedBox(
+                Divider(
                   height: 5.0,
+                  thickness: 1,
                 ),
                 _getEmailInputWidget(mediaQuery),
-                SizedBox(
+                Divider(
                   height: 5.0,
+                  thickness: 1,
                 ),
               ],
             ),
@@ -284,7 +277,7 @@ class _OrderFormationReceiverContentWidgetState
           height: 20.0,
         ),
         GestureDetector(
-          onTap: () => _onConfirmButtonPressed(context),
+          onTap: () => _onConfirmButtonPressed(context, cartModel),
           child: Center(
             child: Container(
               height: 50,

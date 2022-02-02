@@ -42,6 +42,28 @@ class AuthController {
     return true;
   }
 
+  static Future<bool> performGoogleSignIn(String idTokenString) async {
+    String url =
+        HttpConstants.SERVER_HOST + HttpConstants.AUTH_PATH + "/google_sign_in";
+    dynamic reqBody = {
+      "idTokenString": idTokenString,
+    };
+
+    final response = await http.post(
+      url,
+      body: json.encode(reqBody),
+      headers: HttpConstants.DEFAULT_REQUEST_HEADERS,
+    );
+
+    if (response.statusCode != 200) {
+      lastErrorMsg = "Cannot signin from google account.";
+      return false;
+    }
+
+    await _decodeAuthResponseBody(response);
+    return true;
+  }
+
   static Future<bool> performSignup({
     String email,
     String password,

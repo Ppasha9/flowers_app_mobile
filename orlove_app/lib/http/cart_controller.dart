@@ -16,9 +16,14 @@ class CartController {
     headers["Authorization"] =
         "${SecureStorage.tokenType} ${SecureStorage.token}";
 
+    dynamic reqParams = [];
+    (params as List).forEach((el) {
+      reqParams.add(el.toJson());
+    });
+
     dynamic reqBody = {
       "productId": id,
-      "parameters": params,
+      "parameters": reqParams,
     };
 
     final response = await http.post(
@@ -43,9 +48,14 @@ class CartController {
     headers["Authorization"] =
         "${SecureStorage.tokenType} ${SecureStorage.token}";
 
+    dynamic reqParams = [];
+    (params as List).forEach((el) {
+      reqParams.add(el.toJson());
+    });
+
     dynamic reqBody = {
       "productId": productId,
-      "parameters": params,
+      "parameters": reqParams,
     };
 
     final response = await http.post(
@@ -73,9 +83,14 @@ class CartController {
     headers["Authorization"] =
         "${SecureStorage.tokenType} ${SecureStorage.token}";
 
+    dynamic reqParams = [];
+    (params as List).forEach((el) {
+      reqParams.add(el.toJson());
+    });
+
     dynamic reqBody = {
       "productId": productId,
-      "parameters": params,
+      "parameters": reqParams,
       "permanently": true.toString(),
     };
 
@@ -138,7 +153,6 @@ class CartController {
     dynamic productsDescr = json.decode(response.body);
     dynamic res = {};
 
-    res["productsDescrs"] = productsDescr["products"];
     res["products"] = [];
     for (dynamic elm in productsDescr["products"]) {
       var productFullInfo =

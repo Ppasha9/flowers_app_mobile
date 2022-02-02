@@ -16,23 +16,12 @@ class _CatalogScreenState extends State<CatalogScreen> {
   bool isLoading = true;
   List<dynamic> categoriesList;
 
-  @override
-  void initState() {
-    super.initState();
-    CategoryController.getAllCategories().then(
-      (value) {
-        categoriesList = value;
-        setState(() {
-          isLoading = false;
-        });
-      },
-    );
-  }
-
   Widget _getCategoryWidget(BuildContext context, dynamic categoryInfo) {
     final mediaQuery = MediaQuery.of(context);
 
-    return GestureDetector(
+    return InkWell(
+      splashColor: Colors.white.withOpacity(0.0),
+      highlightColor: Colors.white.withOpacity(0.0),
       onTap: () => Navigator.of(context).push(
         CupertinoPageRoute(
           builder: (_) => ProductsByCategoryScreen(
@@ -115,6 +104,15 @@ class _CatalogScreenState extends State<CatalogScreen> {
 
   Widget _getBodyWidget(BuildContext context) {
     if (isLoading) {
+      CategoryController.getAllCategories().then(
+        (value) {
+          categoriesList = value;
+          setState(() {
+            isLoading = false;
+          });
+        },
+      );
+
       return Center(
         child: CircularProgressIndicator(),
       );

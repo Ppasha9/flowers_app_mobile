@@ -51,7 +51,8 @@ class ProductPicturesCarouselWidgetState
         builder: (ctx) => AlertDialog(
           title: Text("Внимание!"),
           content: Text(
-              "Чтобы добавить товар в избранные, нужно войти в аккаунт/зарегистрироваться"),
+            "Чтобы добавить товар в избранные, нужно войти в аккаунт/зарегистрироваться",
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(ctx).pop(),

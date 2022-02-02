@@ -2,10 +2,11 @@ import 'package:bottom_loader/bottom_loader.dart';
 import 'package:flutter/material.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/http/cart_controller.dart';
+import 'package:orlove_app/models/cart_model.dart';
 import 'package:orlove_app/screens/components/bottom_loader.dart';
-import 'package:orlove_app/storage/storage.dart';
 import 'package:orlove_app/utils/utils.dart';
 import 'cart_card.dart';
+import 'package:provider/provider.dart';
 
 class ProductCardInCartCard extends StatefulWidget {
   final int productIndexInCartArray;
@@ -21,18 +22,19 @@ class ProductCardInCartCard extends StatefulWidget {
 
 class _ProductCardInCartCardState extends State<ProductCardInCartCard> {
   BottomLoader bottomLoader;
-  dynamic productInfo;
+  ProductInCartDTO productInfo;
+  CartFullInfoDTO curCartFullInfo = null;
 
-  Future _addProductToCart() async {
+  Future _addProductToCart(CartModel cartModel) async {
     if (!bottomLoader.isShowing()) {
       bottomLoader.display();
     }
 
     await CartController.addProductToCart(
-      productInfo["info"]["id"],
-      productInfo["parameters"],
+      productInfo.info["id"],
+      productInfo.parameters,
     );
-    await Utils.getAllCartInfo();
+    await cartModel.updateCartFullInfo();
 
     if (bottomLoader.isShowing()) {
       bottomLoader.close();
@@ -42,16 +44,16 @@ class _ProductCardInCartCardState extends State<ProductCardInCartCard> {
     widget.cartIconState.setState(() {});
   }
 
-  Future _removeProductFromCart() async {
+  Future _removeProductFromCart(CartModel cartModel) async {
     if (!bottomLoader.isShowing()) {
       bottomLoader.display();
     }
 
     await CartController.removeProductFromCart(
-      productInfo["info"]["id"],
-      productInfo["parameters"],
+      productInfo.info["id"],
+      productInfo.parameters,
     );
-    await Utils.getAllCartInfo();
+    await cartModel.updateCartFullInfo();
 
     if (bottomLoader.isShowing()) {
       bottomLoader.close();
@@ -61,16 +63,16 @@ class _ProductCardInCartCardState extends State<ProductCardInCartCard> {
     widget.cartIconState.setState(() {});
   }
 
-  Future _deleteProductFromCart() async {
+  Future _deleteProductFromCart(CartModel cartModel) async {
     if (!bottomLoader.isShowing()) {
       bottomLoader.display();
     }
 
     await CartController.permanentlyDeleteProductFromCart(
-      productInfo["info"]["id"],
-      productInfo["parameters"],
+      productInfo.info["id"],
+      productInfo.parameters,
     );
-    await Utils.getAllCartInfo();
+    await cartModel.updateCartFullInfo();
 
     if (bottomLoader.isShowing()) {
       bottomLoader.close();
@@ -81,13 +83,12 @@ class _ProductCardInCartCardState extends State<ProductCardInCartCard> {
   }
 
   num _getProductPriceWithParameters() {
-    num res = productInfo["info"]["price"];
-    var parameters = productInfo["parameters"] != null
-        ? (productInfo["parameters"] as List)
-        : [];
-    for (dynamic param in parameters) {
-      if (param["parameterPrice"] != null) {
-        res += param["parameterPrice"];
+    num res = productInfo.info["price"];
+    var parameters =
+        productInfo.parameters != null ? productInfo.parameters : [];
+    for (ProductParameterDTO param in parameters) {
+      if (param.parameterPrice != null) {
+        res += param.parameterPrice;
       }
     }
 
@@ -97,8 +98,20 @@ class _ProductCardInCartCardState extends State<ProductCardInCartCard> {
   @override
   Widget build(BuildContext context) {
     bottomLoader = getBottomLoader(context);
-    productInfo = SecureStorage.cartFullInfo["allProducts"]["products"]
-        [widget.productIndexInCartArray];
+    CartModel cartModel = context.watch<CartModel>();
+    cartModel.getCartFullInfo().then((value) {
+      setState(() {
+        curCartFullInfo = value;
+      });
+    });
+
+    if (curCartFullInfo == null) {
+      return Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    productInfo = curCartFullInfo.products[widget.productIndexInCartArray];
     final mediaQuery = MediaQuery.of(context);
 
     return Container(
@@ -131,7 +144,7 @@ class _ProductCardInCartCardState extends State<ProductCardInCartCard> {
                     ),
                     image: DecorationImage(
                       image: NetworkImage(
-                        productInfo["info"]["pictures"][0]["url"],
+                        productInfo.info["pictures"][0]["url"],
                       ),
                       fit: BoxFit.fill,
                     ),
@@ -157,7 +170,7 @@ class _ProductCardInCartCardState extends State<ProductCardInCartCard> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              "${Utils.fromUTF8(productInfo["info"]["name"])}\n${Utils.getPriceCorrectString(_getProductPriceWithParameters())} Руб.",
+                              "${Utils.fromUTF8(productInfo.info["name"])}\n${Utils.getPriceCorrectString(_getProductPriceWithParameters())} Руб.",
                               style: TextStyle(
                                 fontSize: 13 * mediaQuery.textScaleFactor,
                                 fontFamily: ProjectConstants.APP_FONT_FAMILY,
@@ -167,7 +180,7 @@ class _ProductCardInCartCardState extends State<ProductCardInCartCard> {
                               ),
                             ),
                             GestureDetector(
-                              onTap: _deleteProductFromCart,
+                              onTap: () => _deleteProductFromCart(cartModel),
                               child: Icon(
                                 Icons.delete_forever,
                                 color: ProjectConstants.APP_FONT_COLOR,
@@ -208,7 +221,8 @@ class _ProductCardInCartCardState extends State<ProductCardInCartCard> {
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       GestureDetector(
-                                        onTap: _removeProductFromCart,
+                                        onTap: () =>
+                                            _removeProductFromCart(cartModel),
                                         child: Container(
                                           width: rowConstraints.maxWidth * 0.33,
                                           decoration: BoxDecoration(
@@ -239,7 +253,7 @@ class _ProductCardInCartCardState extends State<ProductCardInCartCard> {
                                         width: rowConstraints.maxWidth * 0.3,
                                         child: Center(
                                           child: Text(
-                                            productInfo["amount"].toString(),
+                                            productInfo.amount.toString(),
                                             style: TextStyle(
                                               fontSize: 16 *
                                                   mediaQuery.textScaleFactor,
@@ -254,7 +268,8 @@ class _ProductCardInCartCardState extends State<ProductCardInCartCard> {
                                         ),
                                       ),
                                       GestureDetector(
-                                        onTap: _addProductToCart,
+                                        onTap: () =>
+                                            _addProductToCart(cartModel),
                                         child: Container(
                                           width: rowConstraints.maxWidth * 0.33,
                                           decoration: BoxDecoration(

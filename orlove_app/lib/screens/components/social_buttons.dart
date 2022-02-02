@@ -1,12 +1,44 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:whatsapp_unilink/whatsapp_unilink.dart';
 
 class SocialButtonsWidget extends StatelessWidget {
   _openWhatsApp(BuildContext context) async {
-    var snackBar = SnackBar(content: Text('На телефоне отсутствует Whatsapp'));
+    var snackBar = SnackBar(content: Text('Не удалось запустить Whatsapp'));
 
-    var url = "whatsapp://send?phone=89112067131";
+    final url = WhatsAppUnilink(
+      phoneNumber: "+79112067131",
+      text: "Привет!",
+    );
+
+    await canLaunch("$url")
+        ? await launch("$url")
+        : ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  _openEmailApp(BuildContext context) async {
+    var snackBar =
+        SnackBar(content: Text('Не удалось запустить приложение эл. почты'));
+    String url() {
+      if (Platform.isIOS) {
+        return "message:orlove-spb@mail.ru";
+      } else {
+        return "mailto:orlove-spb@mail.ru";
+      }
+    }
+
+    await canLaunch(url())
+        ? await launch(url())
+        : ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  _openTelegramApp(BuildContext context) async {
+    var snackBar = SnackBar(content: Text('Не удалось запустить Telegram'));
+    String url = "http://telegram.me/orloveflowers";
+
     await canLaunch(url)
         ? await launch(url)
         : ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -53,8 +85,9 @@ class SocialButtonsWidget extends StatelessWidget {
     return Row(
       children: [
         _getSocialButtonWidget("WhatsApp", mediaQuery, context, _openWhatsApp),
-        _getSocialButtonWidget("Эл. почта", mediaQuery, context, (_) {}),
-        _getSocialButtonWidget("Telegram", mediaQuery, context, (_) {}),
+        _getSocialButtonWidget("Эл. почта", mediaQuery, context, _openEmailApp),
+        _getSocialButtonWidget(
+            "Telegram", mediaQuery, context, _openTelegramApp),
       ],
     );
   }

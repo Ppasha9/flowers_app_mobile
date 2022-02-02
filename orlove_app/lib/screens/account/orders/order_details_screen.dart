@@ -83,6 +83,9 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
 
     return Container(
       height: mediaQuery.size.height * 0.15,
+      margin: const EdgeInsets.symmetric(
+        vertical: 5.0,
+      ),
       child: LayoutBuilder(
         builder: (ctx, constraints) {
           return Row(
@@ -398,7 +401,6 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           ),
           Divider(
             thickness: 2.0,
-            color: ProjectConstants.DEFAULT_STROKE_COLOR,
           ),
           SizedBox(
             height: 5.0,
@@ -429,7 +431,6 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           ),
           Divider(
             thickness: 2.0,
-            color: ProjectConstants.DEFAULT_STROKE_COLOR,
           ),
           SizedBox(
             height: 5.0,
@@ -457,7 +458,6 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           ),
           Divider(
             thickness: 2.0,
-            color: ProjectConstants.DEFAULT_STROKE_COLOR,
           ),
           SizedBox(
             height: 5.0,
@@ -485,7 +485,6 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           ),
           Divider(
             thickness: 2.0,
-            color: ProjectConstants.DEFAULT_STROKE_COLOR,
           ),
           Container(
             margin: const EdgeInsets.symmetric(
@@ -525,7 +524,6 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           ),
           Divider(
             thickness: 2.0,
-            color: ProjectConstants.DEFAULT_STROKE_COLOR,
           ),
           SizedBox(
             height: 20.0,
@@ -549,7 +547,6 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           ),
           Divider(
             thickness: 2.0,
-            color: ProjectConstants.DEFAULT_STROKE_COLOR,
           ),
           SizedBox(
             height: 5.0,
@@ -560,7 +557,6 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
           ),
           Divider(
             thickness: 2.0,
-            color: ProjectConstants.DEFAULT_STROKE_COLOR,
           ),
           SizedBox(
             height: 20.0,

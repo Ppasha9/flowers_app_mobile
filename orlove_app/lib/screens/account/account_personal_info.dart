@@ -280,8 +280,8 @@ class _AccountPersonalInfoScreenState extends State<AccountPersonalInfoScreen> {
     final mediaQuery = MediaQuery.of(context);
 
     _emailTextController.text = SecureStorage.email;
-    _nameTextController.text = SecureStorage.name;
-    _surnameTextController.text = SecureStorage.surname;
+    _nameTextController.text = Utils.fromUTF8(SecureStorage.name);
+    _surnameTextController.text = Utils.fromUTF8(SecureStorage.surname);
     _phoneTextController.text = SecureStorage.phone;
 
     return SingleChildScrollView(

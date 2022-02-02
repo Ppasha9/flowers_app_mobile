@@ -1,6 +1,7 @@
 import 'package:bottom_loader/bottom_loader.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_masked_text/flutter_masked_text.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/http/auth_controller.dart';
@@ -21,7 +22,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final _nameTextController = TextEditingController();
   final _surnameTextController = TextEditingController();
   final _emailTextController = TextEditingController();
-  final _phoneTextController = TextEditingController();
+  final _phoneTextController = MaskedTextController(mask: "+7 (000) 000-00-00");
   final _passwordTextController = TextEditingController();
   final _passwordAgainTextController = TextEditingController();
 
@@ -321,10 +322,16 @@ class _SignupScreenState extends State<SignupScreen> {
       bottomLoader.display();
     }
 
+    String phone = _phoneTextController.text
+        .replaceAll('(', '')
+        .replaceAll(')', '')
+        .replaceAll(' ', '')
+        .replaceAll('-', '');
+
     var authRes = await AuthController.performSignup(
       email: _emailTextController.text,
       password: _passwordTextController.text,
-      phone: _phoneTextController.text,
+      phone: phone,
       name: _nameTextController.text,
       surname: _surnameTextController.text,
     );

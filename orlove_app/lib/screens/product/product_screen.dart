@@ -1,11 +1,11 @@
-import 'dart:convert';
-
 import 'package:bottom_loader/bottom_loader.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/http/cart_controller.dart';
 import 'package:orlove_app/http/product_controller.dart';
+import 'package:orlove_app/models/cart_model.dart';
 import 'package:orlove_app/screens/components/app_bar.dart';
 import 'package:orlove_app/screens/components/bottom_loader.dart';
 import 'package:orlove_app/screens/components/bottom_navigation_bar.dart';
@@ -15,6 +15,7 @@ import 'package:orlove_app/screens/product/product_screen_components.dart';
 import 'package:orlove_app/screens/signin/signin_screen.dart';
 import 'package:orlove_app/storage/storage.dart';
 import 'package:orlove_app/utils/utils.dart';
+import 'package:provider/provider.dart';
 
 class ProductScreen extends StatefulWidget {
   final int id;
@@ -31,7 +32,8 @@ class ProductScreenState extends State<ProductScreen> {
   bool isLoading = true;
   dynamic productInfo;
 
-  dynamic parametersPrices = {};
+  dynamic parametersValues = {};
+  dynamic parametersInds = {};
 
   @override
   void initState() {
@@ -40,7 +42,10 @@ class ProductScreenState extends State<ProductScreen> {
       (prInfo) {
         productInfo = prInfo;
         (productInfo["parameters"] as List)?.forEach((e) {
-          parametersPrices[e["name"]] = e["value"];
+          if (parametersValues[e["name"]] == null) {
+            parametersValues[e["name"]] = e["value"];
+          }
+          parametersInds[e["name"]] = 0;
         });
 
         setState(() {
@@ -61,33 +66,45 @@ class ProductScreenState extends State<ProductScreen> {
     return res;
   }
 
-  Future _addProductToCart() async {
+  Future _addProductToCart(CartModel cartModel) async {
+    bool isFailed = false;
+    List<ProductParameterDTO> params = [];
+    Map<String, String> parametersValuesAsJson =
+        Map<String, String>.from(parametersValues);
+    (parametersValuesAsJson as Map<String, String>)?.forEach((key, value) {
+      if (value == "") {
+        isFailed = true;
+        Fluttertoast.showToast(
+            msg: "Нужно выбрать параметр '${Utils.fromUTF8(key)}'");
+        return;
+      }
+
+      params.add(
+        ProductParameterDTO(
+          parameterName: Utils.fromUTF8(key),
+          parameterValue: Utils.fromUTF8(value),
+          parameterPrice: _getParamPriceByNameAndValue(key, value),
+        ),
+      );
+    });
+
+    if (isFailed) {
+      return;
+    }
+
     if (!bottomLoader.isShowing()) {
       bottomLoader.display();
     }
 
-    List<dynamic> params = [];
-    Map<String, String> parametersPricesAsJson =
-        Map<String, String>.from(parametersPrices);
-    (parametersPricesAsJson as Map<String, String>)?.forEach((key, value) {
-      params.add(
-        {
-          "parameterName": Utils.fromUTF8(key),
-          "parameterValue": Utils.fromUTF8(value),
-          "parameterPrice": _getParamPriceByNameAndValue(key, value),
-        },
-      );
-    });
-
     await CartController.addProductToCart(widget.id, params);
-    await Utils.getAllCartInfo();
+    await cartModel.updateCartFullInfo();
 
     if (bottomLoader.isShowing()) {
       bottomLoader.close();
     }
   }
 
-  Widget _getAddCartButton(BuildContext context) {
+  Widget _getAddCartButton(BuildContext context, CartModel cartModel) {
     final mediaQuery = MediaQuery.of(context);
 
     List<Widget> children = [];
@@ -95,7 +112,7 @@ class ProductScreenState extends State<ProductScreen> {
     children.add(
       GestureDetector(
         onTap: SecureStorage.isLogged
-            ? _addProductToCart
+            ? () => _addProductToCart(cartModel)
             : () {
                 Navigator.push(
                   context,
@@ -168,33 +185,6 @@ class ProductScreenState extends State<ProductScreen> {
         children: children,
       ),
     );
-
-    /*
-    return GestureDetector(
-      onTap: _addProductToCart,
-      child: Center(
-        child: Container(
-          height: 50,
-          width: mediaQuery.size.width / 1.3,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(1.0)),
-            color: ProjectConstants.BUTTON_BACKGROUND_COLOR,
-          ),
-          child: Center(
-            child: Text(
-              isAddedToCart ? "Уже в корзине" : "Добавить в корзину",
-              style: TextStyle(
-                fontSize: 18 * mediaQuery.textScaleFactor,
-                fontFamily: ProjectConstants.APP_FONT_FAMILY,
-                color: ProjectConstants.BUTTON_TEXT_COLOR,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-    */
   }
 
   int _getParameterPrice(
@@ -202,6 +192,10 @@ class ProductScreenState extends State<ProductScreen> {
     String paramValue,
     dynamic parameters,
   ) {
+    if (paramValue == "") {
+      return 0;
+    }
+
     int res = 0;
     (parameters as List)?.forEach((param) {
       if (param["name"] == paramName && param["value"] == paramValue) {
@@ -241,20 +235,16 @@ class ProductScreenState extends State<ProductScreen> {
 
     List<Widget> children = [];
     paramsNameToValues.forEach((key, value) {
-      List<DropdownMenuItem<String>> menuItems = [];
-      (value as List)?.forEach((v) {
-        menuItems.add(
-          DropdownMenuItem<String>(
-            value: Utils.fromUTF8(v["value"]),
-            child: Text(
-              Utils.fromUTF8(v["value"]),
-              textAlign: TextAlign.justify,
-              style: TextStyle(
-                fontSize: 16 * mediaQuery.textScaleFactor,
-                fontFamily: ProjectConstants.APP_FONT_FAMILY,
-                color: ProjectConstants.APP_FONT_COLOR,
-                fontWeight: FontWeight.w600,
-              ),
+      List<Widget> pickerChildren = [];
+      (value as List)?.forEach((el) {
+        pickerChildren.add(
+          Text(
+            Utils.fromUTF8(el["value"]),
+            style: TextStyle(
+              fontSize: 16 * mediaQuery.textScaleFactor,
+              fontFamily: ProjectConstants.APP_FONT_FAMILY,
+              color: ProjectConstants.APP_FONT_COLOR,
+              fontWeight: FontWeight.w600,
             ),
           ),
         );
@@ -265,53 +255,123 @@ class ProductScreenState extends State<ProductScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                Utils.fromUTF8(key),
-                textAlign: TextAlign.justify,
-                style: TextStyle(
-                  fontSize: 16 * mediaQuery.textScaleFactor,
-                  fontFamily: ProjectConstants.APP_FONT_FAMILY,
-                  color: ProjectConstants.APP_FONT_COLOR,
-                  fontWeight: FontWeight.bold,
+              Center(
+                child: Text(
+                  "${Utils.fromUTF8(key)}:",
+                  textAlign: TextAlign.justify,
+                  style: TextStyle(
+                    fontSize: 16 * mediaQuery.textScaleFactor,
+                    fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                    color: ProjectConstants.APP_FONT_COLOR,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              SizedBox(
-                width: 10.0,
               ),
               Row(
                 children: [
-                  DropdownButtonHideUnderline(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(5.0),
-                        border: Border.all(color: Colors.black, width: 0.1),
-                      ),
-                      padding: EdgeInsets.symmetric(
-                        vertical: 5.0,
-                        horizontal: 15.0,
-                      ),
-                      height: 40 * mediaQuery.textScaleFactor,
-                      width: mediaQuery.size.width / 3,
-                      child: DropdownButton<String>(
-                        value: parametersPrices[key] != null
-                            ? parametersPrices[key]
-                            : "",
-                        items: menuItems,
-                        onChanged: (v) {
-                          setState(() {
-                            parametersPrices[key] = v;
-                          });
+                  GestureDetector(
+                    onTap: () {
+                      showCupertinoModalPopup(
+                        context: context,
+                        builder: (context) {
+                          return Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: <Widget>[
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  border: Border(
+                                    bottom: BorderSide(
+                                      color: Color(0xff999999),
+                                      width: 0.0,
+                                    ),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.end,
+                                  children: <Widget>[
+                                    CupertinoButton(
+                                      child: Text(
+                                        'Выбрать',
+                                        style: TextStyle(
+                                          fontSize:
+                                              14 * mediaQuery.textScaleFactor,
+                                          fontFamily:
+                                              ProjectConstants.APP_FONT_FAMILY,
+                                          color: ProjectConstants
+                                              .BUTTON_TEXT_COLOR,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16.0,
+                                        vertical: 5.0,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                height: mediaQuery.size.height / 5.5,
+                                width: mediaQuery.size.width,
+                                child: CupertinoPicker(
+                                  backgroundColor: Color(0xfff7f7f7),
+                                  itemExtent: 25,
+                                  diameterRatio: 1,
+                                  useMagnifier: true,
+                                  magnification: 1.3,
+                                  scrollController: FixedExtentScrollController(
+                                    initialItem: parametersInds[key],
+                                  ),
+                                  children: pickerChildren,
+                                  onSelectedItemChanged: (idx) {
+                                    setState(() {
+                                      parametersValues[key] =
+                                          value[idx]["value"];
+                                      parametersInds[key] = idx;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ],
+                          );
                         },
+                      );
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 15.0,
+                        vertical: 5.0,
+                      ),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: ProjectConstants.DEFAULT_STROKE_COLOR,
+                        ),
+                        borderRadius: BorderRadius.circular(
+                          5.0,
+                        ),
+                      ),
+                      child: Text(
+                        parametersValues[key],
+                        style: TextStyle(
+                          fontSize: 16 * mediaQuery.textScaleFactor,
+                          fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                          color: ProjectConstants.DEFAULT_STROKE_COLOR,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
                   SizedBox(
-                    width: 5.0,
+                    width: 10.0,
                   ),
                   Text(
                     "(+ ${_getParameterPrice(
                       key,
-                      parametersPrices[key],
+                      parametersValues[key],
                       parameters,
                     )} Руб.)",
                     style: TextStyle(
@@ -331,8 +391,8 @@ class ProductScreenState extends State<ProductScreen> {
 
     return Container(
       margin: EdgeInsets.only(
-        left: 25.0,
-        right: 25.0,
+        left: 20.0,
+        right: 20.0,
       ),
       child: Column(
         children: children,
@@ -340,7 +400,7 @@ class ProductScreenState extends State<ProductScreen> {
     );
   }
 
-  Widget _getBodyWidget(BuildContext context) {
+  Widget _getBodyWidget(BuildContext context, CartModel cartModel) {
     if (isLoading) {
       return Center(
         child: CircularProgressIndicator(),
@@ -350,9 +410,9 @@ class ProductScreenState extends State<ProductScreen> {
     final mediaQuery = MediaQuery.of(context);
 
     print(productInfo);
-    print(parametersPrices);
+    print(parametersValues);
 
-    return SingleChildScrollView(
+    Widget scrollingBodyWidget = SingleChildScrollView(
       child: Container(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -425,24 +485,25 @@ class ProductScreenState extends State<ProductScreen> {
                 ),
               ),
             ),
-            Container(
-              margin: const EdgeInsets.only(
-                top: 10.0,
-                left: 10.0,
-              ),
-              child: Text(
-                "Параметры",
-                style: TextStyle(
-                  fontSize: 16 * mediaQuery.textScaleFactor,
-                  fontFamily: ProjectConstants.APP_FONT_FAMILY,
-                  fontWeight: FontWeight.w600,
-                  color: ProjectConstants.APP_FONT_COLOR,
-                ),
-              ),
-            ),
             (productInfo["parameters"] as List).length > 0
                 ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      Container(
+                        margin: const EdgeInsets.only(
+                          top: 10.0,
+                          left: 10.0,
+                        ),
+                        child: Text(
+                          "Параметры",
+                          style: TextStyle(
+                            fontSize: 16 * mediaQuery.textScaleFactor,
+                            fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                            fontWeight: FontWeight.w600,
+                            color: ProjectConstants.APP_FONT_COLOR,
+                          ),
+                        ),
+                      ),
                       Container(
                         width: mediaQuery.size.width / 1.1,
                         margin: const EdgeInsets.only(
@@ -463,13 +524,17 @@ class ProductScreenState extends State<ProductScreen> {
                         height: 5.0,
                       ),
                       _getParametersWidget(
-                          mediaQuery, productInfo["parameters"]),
+                        mediaQuery,
+                        productInfo["parameters"],
+                      ),
                     ],
                   )
                 : Container(),
+            SizedBox(
+              height: 25.0,
+            ),
             Container(
               margin: const EdgeInsets.only(
-                top: 10.0,
                 left: 10.0,
                 right: 10.0,
               ),
@@ -484,7 +549,7 @@ class ProductScreenState extends State<ProductScreen> {
               ),
             ),
             SizedBox(
-              height: 20.0,
+              height: 25.0,
             ),
             Container(
               margin: const EdgeInsets.only(
@@ -594,32 +659,50 @@ class ProductScreenState extends State<ProductScreen> {
         ),
       ),
     );
+
+    return Container(
+      height: mediaQuery.size.height,
+      width: mediaQuery.size.width,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Expanded(
+            child: scrollingBodyWidget,
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.shade400,
+                  blurRadius: 8.0,
+                  spreadRadius: 0.0,
+                  offset: Offset(0, 1),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.only(
+              top: 10,
+              bottom: 10,
+            ),
+            child: _getAddCartButton(context, cartModel),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     bottomLoader = getBottomLoader(context);
+    CartModel cartModel = context.watch<CartModel>();
 
     return Scaffold(
       backgroundColor: ProjectConstants.BACKGROUND_SCREEN_COLOR,
-      body: _getBodyWidget(context),
+      body: _getBodyWidget(context, cartModel),
       appBar: getAppBar(context),
-      bottomNavigationBar: Container(
-        height: 163.0,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Container(
-              padding: const EdgeInsets.only(
-                top: 10,
-                bottom: 10,
-              ),
-              child: _getAddCartButton(context),
-            ),
-            getBottomNavigationBar(context),
-          ],
-        ),
-      ),
+      bottomNavigationBar: getBottomNavigationBar(context),
     );
   }
 }

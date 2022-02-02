@@ -55,9 +55,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _getBodyWidget(BuildContext context) {
-    //FavoritesModel favoritesModel = context.watch<FavoritesModel>();
-    //favoritesModel.init().then((value) {});
-
     if (!isAllLoaded) {
       return Center(
         child: CircularProgressIndicator(),
