@@ -104,6 +104,42 @@ class ProductScreenState extends State<ProductScreen> {
     }
   }
 
+  Future _oneClickBuy() async {
+    bool isFailed = false;
+    List<ProductParameterDTO> params = [];
+    Map<String, String> parametersValuesAsJson =
+        Map<String, String>.from(parametersValues);
+    (parametersValuesAsJson as Map<String, String>)?.forEach((key, value) {
+      if (value == "") {
+        isFailed = true;
+        Fluttertoast.showToast(
+            msg: "Нужно выбрать параметр '${Utils.fromUTF8(key)}'");
+        return;
+      }
+
+      params.add(
+        ProductParameterDTO(
+          parameterName: Utils.fromUTF8(key),
+          parameterValue: Utils.fromUTF8(value),
+          parameterPrice: _getParamPriceByNameAndValue(key, value),
+        ),
+      );
+    });
+
+    if (isFailed) {
+      return;
+    }
+
+    return Navigator.of(context).push(
+      CupertinoPageRoute(
+        builder: (_) => OneClickScreen(
+          productInfo: productInfo,
+          productSelectedParams: params,
+        ),
+      ),
+    );
+  }
+
   Widget _getAddCartButton(BuildContext context, CartModel cartModel) {
     final mediaQuery = MediaQuery.of(context);
 
@@ -148,15 +184,7 @@ class ProductScreenState extends State<ProductScreen> {
 
     children.add(
       GestureDetector(
-        onTap: () {
-          Navigator.of(context).push(
-            CupertinoPageRoute(
-              builder: (_) => OneClickScreen(
-                productId: widget.id,
-              ),
-            ),
-          );
-        },
+        onTap: () => _oneClickBuy(),
         child: Container(
           height: 50,
           width: mediaQuery.size.width / 2.3,

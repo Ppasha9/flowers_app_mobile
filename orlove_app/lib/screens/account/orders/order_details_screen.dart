@@ -349,14 +349,40 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                   ),
                   width: mediaQuery.size.width,
                   child: Center(
-                    child: Text(
-                      "Заказ №${widget.id}",
-                      style: TextStyle(
-                        fontSize: 18 * mediaQuery.textScaleFactor,
-                        fontFamily: ProjectConstants.APP_FONT_FAMILY,
-                        fontWeight: FontWeight.w600,
-                        color: ProjectConstants.APP_FONT_COLOR,
-                      ),
+                    child: Row(
+                      children: [
+                        Text(
+                          "№${widget.id} заказ",
+                          style: TextStyle(
+                            fontSize: 18 * mediaQuery.textScaleFactor,
+                            fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                            fontWeight: FontWeight.w600,
+                            color: ProjectConstants.APP_FONT_COLOR,
+                          ),
+                        ),
+                        Container(
+                          height: 25,
+                          width: mediaQuery.size.width * 0.25,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(8.0),
+                            ),
+                            color:
+                                Utils.getStatusColor(orderFullInfo["status"]),
+                          ),
+                          child: Center(
+                            child: Text(
+                              Utils.getStatusText(orderFullInfo["status"]),
+                              style: TextStyle(
+                                fontSize: 11 * mediaQuery.textScaleFactor,
+                                fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -373,34 +399,11 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
               ],
             ),
           ),
-          Center(
-            child: Container(
-              height: 25,
-              width: mediaQuery.size.width * 0.25,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(8.0),
-                ),
-                color: Utils.getStatusColor(orderFullInfo["status"]),
-              ),
-              child: Center(
-                child: Text(
-                  Utils.getStatusText(orderFullInfo["status"]),
-                  style: TextStyle(
-                    fontSize: 11 * mediaQuery.textScaleFactor,
-                    fontFamily: ProjectConstants.APP_FONT_FAMILY,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ),
           SizedBox(
             height: 5.0,
           ),
           Divider(
-            thickness: 2.0,
+            thickness: 1.0,
           ),
           SizedBox(
             height: 5.0,
@@ -430,7 +433,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             height: 5.0,
           ),
           Divider(
-            thickness: 2.0,
+            thickness: 1.0,
           ),
           SizedBox(
             height: 5.0,
@@ -457,7 +460,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             height: 5.0,
           ),
           Divider(
-            thickness: 2.0,
+            thickness: 1.0,
           ),
           SizedBox(
             height: 5.0,
@@ -484,7 +487,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             height: 5.0,
           ),
           Divider(
-            thickness: 2.0,
+            thickness: 1.0,
           ),
           Container(
             margin: const EdgeInsets.symmetric(
@@ -523,7 +526,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             height: 5.0,
           ),
           Divider(
-            thickness: 2.0,
+            thickness: 1.0,
           ),
           SizedBox(
             height: 20.0,
@@ -546,7 +549,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             height: 5.0,
           ),
           Divider(
-            thickness: 2.0,
+            thickness: 1.0,
           ),
           SizedBox(
             height: 5.0,
@@ -556,7 +559,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
             height: 5.0,
           ),
           Divider(
-            thickness: 2.0,
+            thickness: 1.0,
           ),
           SizedBox(
             height: 20.0,

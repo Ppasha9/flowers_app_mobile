@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:orlove_app/http/compilation_controller.dart';
 import 'package:provider/provider.dart';
 
 import 'package:orlove_app/languages/language_constants.dart';
@@ -319,6 +320,83 @@ class NewProductsListWidget extends StatelessWidget {
           ),
         ),
         itemCount: newProducts.length,
+      ),
+    );
+  }
+}
+
+class CompilationListElementWidget extends StatelessWidget {
+  final CompilationCuttedFormDRO compilationCuttedInfo;
+
+  const CompilationListElementWidget({@required this.compilationCuttedInfo});
+
+  @override
+  Widget build(BuildContext context) {
+    MediaQueryData mediaQuery = MediaQuery.of(context);
+
+    print(compilationCuttedInfo.picUrl);
+
+    return GestureDetector(
+      onTap: () {},
+      child: Container(
+        height: mediaQuery.size.height / 4.5,
+        width: mediaQuery.size.width / 2.3,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Container(
+              height: mediaQuery.size.height / 5,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: NetworkImage(compilationCuttedInfo.picUrl),
+                  fit: BoxFit.fill,
+                ),
+                borderRadius:
+                    const BorderRadius.all(const Radius.circular(4.0)),
+              ),
+            ),
+            SizedBox(
+              height: 8.0,
+            ),
+            Text(
+              "${compilationCuttedInfo.name}",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13 * mediaQuery.textScaleFactor,
+                fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                fontWeight: FontWeight.normal,
+                color: ProjectConstants.APP_FONT_COLOR,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CompilationsListWidget extends StatelessWidget {
+  final List<CompilationCuttedFormDRO> compilations;
+
+  const CompilationsListWidget({@required this.compilations});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height / 4,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemBuilder: (_, index) => Container(
+          child: Container(
+            margin: const EdgeInsets.symmetric(
+              horizontal: 5.0,
+            ),
+            child: CompilationListElementWidget(
+              compilationCuttedInfo: compilations[index],
+            ),
+          ),
+        ),
+        itemCount: compilations.length,
       ),
     );
   }

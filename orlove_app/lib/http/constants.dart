@@ -7,6 +7,7 @@ class HttpConstants {
   static const String CATEGORY_PATH = "/api/category";
   static const String CART_PATH = "/api/cart";
   static const String ORDER_PATH = "/api/order";
+  static const String COMPILATION_PATH = "/api/compilation";
 
   static dynamic DEFAULT_REQUEST_HEADERS = {
     "Content-Type": "application/json",

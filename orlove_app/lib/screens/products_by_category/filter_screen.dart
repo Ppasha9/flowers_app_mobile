@@ -333,8 +333,8 @@ class _FilterProductsScreenState extends State<FilterProductsScreen> {
           height: MediaQuery.of(context).size.height / 13,
           child: RangeSlider(
             values: RangeValues(
-              _currPriceRange.start.toDouble(),
-              _currPriceRange.end.toDouble(),
+              _currPriceRange.start.round().toDouble(),
+              _currPriceRange.end.round().toDouble(),
             ),
             min: 0.0,
             max: widget.maxPrice,
@@ -342,8 +342,8 @@ class _FilterProductsScreenState extends State<FilterProductsScreen> {
             inactiveColor: ProjectConstants.BUTTON_TEXT_COLOR,
             divisions: (widget.maxPrice / maxPriceDelimeter).round(),
             labels: RangeLabels(
-              _currPriceRange.start.toString(),
-              _currPriceRange.end.toString(),
+              _currPriceRange.start.round().toString(),
+              _currPriceRange.end.round().toString(),
             ),
             onChanged: (RangeValues values) {
               setState(() {

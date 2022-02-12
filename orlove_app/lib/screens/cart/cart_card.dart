@@ -266,7 +266,6 @@ class CartCardState extends State<CartCard> {
                 ),
                 Divider(
                   thickness: 2.0,
-                  color: ProjectConstants.APP_FONT_COLOR,
                 ),
                 Container(
                   height: constraints.maxHeight * 0.10,
@@ -295,10 +294,8 @@ class CartCardState extends State<CartCard> {
                             fontSize: 14 * mediaQuery.textScaleFactor,
                             fontFamily: ProjectConstants.APP_FONT_FAMILY,
                             fontWeight: FontWeight.normal,
-                            decoration: TextDecoration.underline,
-                            decorationColor: Colors.black,
-                            decorationStyle: TextDecorationStyle.solid,
                             color: ProjectConstants.APP_FONT_COLOR,
+                            decoration: TextDecoration.none,
                           ),
                         ),
                       ],

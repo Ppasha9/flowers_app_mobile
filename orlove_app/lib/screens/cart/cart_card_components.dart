@@ -123,7 +123,7 @@ class _ProductCardInCartCardState extends State<ProductCardInCartCard> {
       ),
       decoration: BoxDecoration(
         border: Border.all(
-          color: ProjectConstants.DEFAULT_STROKE_COLOR,
+          color: Colors.grey.shade300,
         ),
       ),
       child: LayoutBuilder(
@@ -159,6 +159,7 @@ class _ProductCardInCartCardState extends State<ProductCardInCartCard> {
                   bottom: 10.0,
                 ),
                 child: Material(
+                  type: MaterialType.transparency,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -209,9 +210,8 @@ class _ProductCardInCartCardState extends State<ProductCardInCartCard> {
                             Container(
                               decoration: BoxDecoration(
                                 border: Border.all(
-                                  color: ProjectConstants.DEFAULT_STROKE_COLOR,
+                                  color: Colors.grey.shade300,
                                 ),
-                                color: Colors.grey.shade100,
                               ),
                               width: constraints.maxWidth * 0.20,
                               child: LayoutBuilder(
@@ -226,10 +226,6 @@ class _ProductCardInCartCardState extends State<ProductCardInCartCard> {
                                         child: Container(
                                           width: rowConstraints.maxWidth * 0.33,
                                           decoration: BoxDecoration(
-                                            border: Border.all(
-                                              color: ProjectConstants
-                                                  .DEFAULT_STROKE_COLOR,
-                                            ),
                                             color: Colors.white,
                                           ),
                                           child: Center(
@@ -250,6 +246,17 @@ class _ProductCardInCartCardState extends State<ProductCardInCartCard> {
                                         ),
                                       ),
                                       Container(
+                                        decoration: BoxDecoration(
+                                          border: Border(
+                                            left: BorderSide(
+                                              color: Colors.grey.shade300,
+                                            ),
+                                            right: BorderSide(
+                                              color: Colors.grey.shade300,
+                                            ),
+                                          ),
+                                          color: Colors.white,
+                                        ),
                                         width: rowConstraints.maxWidth * 0.3,
                                         child: Center(
                                           child: Text(
@@ -273,10 +280,6 @@ class _ProductCardInCartCardState extends State<ProductCardInCartCard> {
                                         child: Container(
                                           width: rowConstraints.maxWidth * 0.33,
                                           decoration: BoxDecoration(
-                                            border: Border.all(
-                                              color: ProjectConstants
-                                                  .DEFAULT_STROKE_COLOR,
-                                            ),
                                             color: Colors.white,
                                           ),
                                           child: Center(

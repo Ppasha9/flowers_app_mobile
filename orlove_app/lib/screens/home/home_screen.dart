@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:orlove_app/constants.dart';
+import 'package:orlove_app/http/compilation_controller.dart';
 import 'package:orlove_app/http/product_controller.dart';
 import 'package:orlove_app/screens/components/app_bar.dart';
 import 'package:orlove_app/screens/components/bottom_navigation_bar.dart';
@@ -21,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<dynamic> productsPerCategory;
   dynamic dayProduct;
   List<dynamic> newProducts;
+  List<CompilationCuttedFormDRO> compilations;
 
   Future<dynamic> _loadProductsPerCategory() async {
     return await ProductController.getProductPerCategory();
@@ -34,6 +36,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return await ProductController.getProductsForCategory(category: "New");
   }
 
+  Future<List<CompilationCuttedFormDRO>> _loadCompilations() async {
+    return await CompilationController.getAllCompilationsCuttedForms();
+  }
+
   @override
   void initState() {
     _loadProductsPerCategory().then(
@@ -42,11 +48,14 @@ class _HomeScreenState extends State<HomeScreen> {
         _loadNewProducts().then(
           (_newProducts) {
             newProducts = _newProducts;
-            setState(
-              () {
-                isAllLoaded = true;
-              },
-            );
+            _loadCompilations().then((_newCompilations) {
+              compilations = _newCompilations;
+              setState(
+                () {
+                  isAllLoaded = true;
+                },
+              );
+            });
           },
         );
       },
@@ -187,7 +196,13 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             SizedBox(
-              height: 40.0,
+              height: 20.0,
+            ),
+            CompilationsListWidget(
+              compilations: compilations,
+            ),
+            SizedBox(
+              height: 20.0,
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,

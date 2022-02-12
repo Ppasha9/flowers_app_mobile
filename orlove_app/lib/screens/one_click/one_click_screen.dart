@@ -1,20 +1,25 @@
 import 'package:bottom_loader/bottom_loader.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:form_field_validator/form_field_validator.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/http/product_controller.dart';
+import 'package:orlove_app/models/cart_model.dart';
 import 'package:orlove_app/screens/components/app_bar.dart';
 import 'package:orlove_app/screens/components/bottom_loader.dart';
 import 'package:orlove_app/screens/home/home_screen.dart';
 import 'package:orlove_app/storage/storage.dart';
 import 'package:orlove_app/utils/utils.dart';
+import 'package:time_machine/time_machine.dart';
 
 class OneClickScreen extends StatefulWidget {
-  final num productId;
+  final dynamic productInfo;
+  final List<ProductParameterDTO> productSelectedParams;
 
   OneClickScreen({
-    this.productId,
+    this.productInfo,
+    this.productSelectedParams,
   });
 
   @override
@@ -39,20 +44,9 @@ class _OneClickScreenState extends State<OneClickScreen> {
   bool _isOnlineSelected = false;
   bool _isCashSelected = true;
 
-  dynamic productInfo;
+  DateTime selectedDate = null;
 
   BottomLoader bottomLoader;
-
-  @override
-  initState() {
-    ProductController.getProductInfoById(widget.productId).then((value) {
-      setState(() {
-        productInfo = value;
-      });
-    });
-
-    super.initState();
-  }
 
   Widget _getNameInputWidget(MediaQueryData mediaQuery) {
     return TextFormField(
@@ -72,11 +66,7 @@ class _OneClickScreenState extends State<OneClickScreen> {
           fontSize: 15 * mediaQuery.textScaleFactor,
           fontWeight: FontWeight.w600,
         ),
-        border: UnderlineInputBorder(
-          borderSide: BorderSide(
-            color: ProjectConstants.DEFAULT_STROKE_COLOR,
-          ),
-        ),
+        border: InputBorder.none,
         errorStyle: TextStyle(
           color: Colors.redAccent,
         ),
@@ -115,11 +105,7 @@ class _OneClickScreenState extends State<OneClickScreen> {
           fontSize: 15 * mediaQuery.textScaleFactor,
           fontWeight: FontWeight.w600,
         ),
-        border: UnderlineInputBorder(
-          borderSide: BorderSide(
-            color: ProjectConstants.DEFAULT_STROKE_COLOR,
-          ),
-        ),
+        border: InputBorder.none,
         errorStyle: TextStyle(
           color: Colors.redAccent,
         ),
@@ -158,11 +144,7 @@ class _OneClickScreenState extends State<OneClickScreen> {
           fontSize: 15 * mediaQuery.textScaleFactor,
           fontWeight: FontWeight.w600,
         ),
-        border: UnderlineInputBorder(
-          borderSide: BorderSide(
-            color: ProjectConstants.DEFAULT_STROKE_COLOR,
-          ),
-        ),
+        border: InputBorder.none,
         errorStyle: TextStyle(
           color: Colors.redAccent,
         ),
@@ -201,11 +183,7 @@ class _OneClickScreenState extends State<OneClickScreen> {
           fontSize: 15 * mediaQuery.textScaleFactor,
           fontWeight: FontWeight.w600,
         ),
-        border: UnderlineInputBorder(
-          borderSide: BorderSide(
-            color: ProjectConstants.DEFAULT_STROKE_COLOR,
-          ),
-        ),
+        border: InputBorder.none,
         errorStyle: TextStyle(
           color: Colors.redAccent,
         ),
@@ -263,18 +241,25 @@ class _OneClickScreenState extends State<OneClickScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _getNameInputWidget(mediaQuery),
-                SizedBox(
+                Divider(
                   height: 5.0,
+                  thickness: 1,
                 ),
                 _getSurnameInputWidget(mediaQuery),
-                SizedBox(
+                Divider(
                   height: 5.0,
+                  thickness: 1,
                 ),
                 _getPhoneInputWidget(mediaQuery),
-                SizedBox(
+                Divider(
                   height: 5.0,
+                  thickness: 1,
                 ),
                 _getEmailInputWidget(mediaQuery),
+                Divider(
+                  height: 5.0,
+                  thickness: 1,
+                ),
               ],
             ),
           ),
@@ -437,11 +422,7 @@ class _OneClickScreenState extends State<OneClickScreen> {
           fontSize: 15 * mediaQuery.textScaleFactor,
           fontWeight: FontWeight.w600,
         ),
-        border: UnderlineInputBorder(
-          borderSide: BorderSide(
-            color: ProjectConstants.DEFAULT_STROKE_COLOR,
-          ),
-        ),
+        border: InputBorder.none,
         errorStyle: TextStyle(
           color: Colors.redAccent,
         ),
@@ -480,11 +461,7 @@ class _OneClickScreenState extends State<OneClickScreen> {
           fontSize: 15 * mediaQuery.textScaleFactor,
           fontWeight: FontWeight.w600,
         ),
-        border: UnderlineInputBorder(
-          borderSide: BorderSide(
-            color: ProjectConstants.DEFAULT_STROKE_COLOR,
-          ),
-        ),
+        border: InputBorder.none,
         errorStyle: TextStyle(
           color: Colors.redAccent,
         ),
@@ -523,11 +500,7 @@ class _OneClickScreenState extends State<OneClickScreen> {
           fontSize: 15 * mediaQuery.textScaleFactor,
           fontWeight: FontWeight.w600,
         ),
-        border: UnderlineInputBorder(
-          borderSide: BorderSide(
-            color: ProjectConstants.DEFAULT_STROKE_COLOR,
-          ),
-        ),
+        border: InputBorder.none,
         errorStyle: TextStyle(
           color: Colors.redAccent,
         ),
@@ -559,18 +532,14 @@ class _OneClickScreenState extends State<OneClickScreen> {
         fontWeight: FontWeight.w600,
       ),
       decoration: InputDecoration(
-        hintText: "Комментарий*",
+        hintText: "Комментарий",
         hintStyle: TextStyle(
           color: ProjectConstants.APP_FONT_COLOR,
           fontFamily: ProjectConstants.APP_FONT_FAMILY,
           fontSize: 15 * mediaQuery.textScaleFactor,
           fontWeight: FontWeight.w600,
         ),
-        border: UnderlineInputBorder(
-          borderSide: BorderSide(
-            color: ProjectConstants.DEFAULT_STROKE_COLOR,
-          ),
-        ),
+        border: InputBorder.none,
         errorStyle: TextStyle(
           color: Colors.redAccent,
         ),
@@ -584,9 +553,6 @@ class _OneClickScreenState extends State<OneClickScreen> {
             color: Colors.redAccent,
           ),
         ),
-      ),
-      validator: RequiredValidator(
-        errorText: "Это поле обязательно к заполнению",
       ),
     );
   }
@@ -641,20 +607,24 @@ class _OneClickScreenState extends State<OneClickScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _getStreetInputWidget(mediaQuery),
-                SizedBox(
+                Divider(
                   height: 5.0,
+                  thickness: 1,
                 ),
                 _getHouseNumInputWidget(mediaQuery),
-                SizedBox(
+                Divider(
                   height: 5.0,
+                  thickness: 1,
                 ),
                 _getRoomNumInputWidget(mediaQuery),
-                SizedBox(
+                Divider(
                   height: 5.0,
+                  thickness: 1,
                 ),
                 _getCommentInputWidget(mediaQuery),
-                SizedBox(
+                Divider(
                   height: 5.0,
+                  thickness: 1,
                 ),
               ],
             ),
@@ -664,8 +634,100 @@ class _OneClickScreenState extends State<OneClickScreen> {
     );
   }
 
+  _selectDate(BuildContext context) async {
+    MediaQueryData mediaQuery = MediaQuery.of(context);
+    DateTime pickedDate = await showModalBottomSheet<DateTime>(
+      context: context,
+      builder: (context) {
+        DateTime tmpPickedDate;
+        return Container(
+          height: mediaQuery.size.height / 4,
+          width: mediaQuery.size.width,
+          child: Column(
+            children: <Widget>[
+              Container(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    CupertinoButton(
+                      child: Text(
+                        'Отмена',
+                        style: TextStyle(
+                          fontSize: 14 * mediaQuery.textScaleFactor,
+                          fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                          color: ProjectConstants.BUTTON_TEXT_COLOR,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    CupertinoButton(
+                      child: Text(
+                        'Готово',
+                        style: TextStyle(
+                          fontSize: 14 * mediaQuery.textScaleFactor,
+                          fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                          color: ProjectConstants.BUTTON_TEXT_COLOR,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).pop(tmpPickedDate);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              Divider(
+                height: 0,
+                thickness: 1,
+              ),
+              Expanded(
+                child: Container(
+                  child: CupertinoDatePicker(
+                    mode: CupertinoDatePickerMode.date,
+                    initialDateTime:
+                        selectedDate != null ? selectedDate : DateTime.now(),
+                    onDateTimeChanged: (DateTime dateTime) {
+                      tmpPickedDate = dateTime;
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (pickedDate != null && pickedDate != selectedDate) {
+      setState(() {
+        selectedDate = pickedDate;
+      });
+    }
+  }
+
   Widget _getShippmentAddressInfoWidget(BuildContext context) {
     MediaQueryData mediaQuery = MediaQuery.of(context);
+
+    Widget dateTextWidget = selectedDate != null
+        ? Container(
+            margin: const EdgeInsets.symmetric(
+              horizontal: 10.0,
+            ),
+            child: Text(
+              "Дата выдачи(доставки) заказа: ${selectedDate.day} ${Utils.getMonthStringFromNumber(selectedDate.month)} ${selectedDate.year}",
+              style: TextStyle(
+                fontSize: 18 * mediaQuery.textScaleFactor,
+                fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                color: ProjectConstants.APP_FONT_COLOR,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          )
+        : Container();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -692,7 +754,6 @@ class _OneClickScreenState extends State<OneClickScreen> {
           height: 5.0,
         ),
         Divider(
-          color: ProjectConstants.DEFAULT_STROKE_COLOR,
           thickness: 1.0,
           indent: 20.0,
           endIndent: 20.0,
@@ -705,6 +766,37 @@ class _OneClickScreenState extends State<OneClickScreen> {
           height: 20.0,
         ),
         _getAddressWidget(context),
+        SizedBox(
+          height: 10.0,
+        ),
+        dateTextWidget,
+        SizedBox(
+          height: 5.0,
+        ),
+        GestureDetector(
+          onTap: () => _selectDate(context),
+          child: Center(
+            child: Container(
+              height: 50,
+              width: mediaQuery.size.width / 1.5,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.all(Radius.circular(1.0)),
+                color: ProjectConstants.BUTTON_BACKGROUND_COLOR,
+              ),
+              child: Center(
+                child: Text(
+                  "Выберите дату",
+                  style: TextStyle(
+                    fontSize: 18 * mediaQuery.textScaleFactor,
+                    fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                    color: ProjectConstants.BUTTON_TEXT_COLOR,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -845,7 +937,6 @@ class _OneClickScreenState extends State<OneClickScreen> {
           height: 5.0,
         ),
         Divider(
-          color: ProjectConstants.DEFAULT_STROKE_COLOR,
           thickness: 1.0,
           indent: 20.0,
           endIndent: 20.0,
@@ -858,11 +949,51 @@ class _OneClickScreenState extends State<OneClickScreen> {
     );
   }
 
+  Widget _getProductParametersWidget(
+      MediaQueryData mediaQuery, dynamic prInfo) {
+    List<ProductParameterDTO> parameters = widget.productSelectedParams != null
+        ? widget.productSelectedParams
+        : [];
+    if (parameters == []) {
+      return Container();
+    }
+
+    List<Widget> children = [];
+    parameters.forEach((ProductParameterDTO el) {
+      children.add(
+        Container(
+          child: Row(
+            children: [
+              Text(
+                "${el.parameterName}: ${el.parameterValue} (+ ${el.parameterPrice.round()} Руб.)",
+                style: TextStyle(
+                  fontSize: 12 * mediaQuery.textScaleFactor,
+                  fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                  color: ProjectConstants.APP_FONT_COLOR,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    });
+
+    return Container(
+      child: Column(
+        children: children,
+      ),
+    );
+  }
+
   Widget _getProductCardWidget(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
 
     return Container(
       height: mediaQuery.size.height * 0.15,
+      margin: const EdgeInsets.symmetric(
+        vertical: 5.0,
+      ),
       child: LayoutBuilder(
         builder: (ctx, constraints) {
           return Row(
@@ -873,7 +1004,7 @@ class _OneClickScreenState extends State<OneClickScreen> {
                 decoration: BoxDecoration(
                   image: DecorationImage(
                     image: NetworkImage(
-                      productInfo["pictures"][0]["url"],
+                      widget.productInfo["pictures"][0]["url"],
                     ),
                     fit: BoxFit.fill,
                   ),
@@ -889,14 +1020,21 @@ class _OneClickScreenState extends State<OneClickScreen> {
                 margin: const EdgeInsets.symmetric(
                   vertical: 5.0,
                 ),
-                child: Text(
-                  "${Utils.fromUTF8(productInfo["name"])}\n${Utils.getPriceCorrectString(productInfo["price"].round())} Руб.",
-                  style: TextStyle(
-                    fontSize: 14 * mediaQuery.textScaleFactor,
-                    fontFamily: ProjectConstants.APP_FONT_FAMILY,
-                    color: ProjectConstants.APP_FONT_COLOR,
-                    fontWeight: FontWeight.w600,
-                  ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "${Utils.fromUTF8(widget.productInfo["name"])}\n${Utils.getPriceCorrectString(widget.productInfo["price"].round())} Руб.",
+                      style: TextStyle(
+                        fontSize: 14 * mediaQuery.textScaleFactor,
+                        fontFamily: ProjectConstants.APP_FONT_FAMILY,
+                        color: ProjectConstants.APP_FONT_COLOR,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    _getProductParametersWidget(mediaQuery, widget.productInfo),
+                  ],
                 ),
               ),
             ],
@@ -942,7 +1080,7 @@ class _OneClickScreenState extends State<OneClickScreen> {
   Widget _getFinalPriceWidget(BuildContext context) {
     MediaQueryData mediaQuery = MediaQuery.of(context);
 
-    int cartPrice = productInfo["price"].round();
+    int cartPrice = widget.productInfo["price"].round();
     int shippmentPrice = _isCourierSelected ? 300 : 0;
 
     return Column(
@@ -1049,20 +1187,38 @@ class _OneClickScreenState extends State<OneClickScreen> {
   }
 
   Future _onConfirmButtonPressed(BuildContext context) async {
+    final receiverValidateRes = _formReceiverKey.currentState.validate();
+    if (!receiverValidateRes) {
+      if (bottomLoader.isShowing()) {
+        bottomLoader.close();
+      }
+
+      return;
+    }
+
+    if (!_isCourierSelected && !_isPickupSelected) {
+      Fluttertoast.showToast(msg: "Нужно обязательно выбрать способ доставки!");
+      return;
+    }
+
+    if (_isCourierSelected) {
+      final shippmentReceiverKey = _formShippmentKey.currentState.validate();
+      if (!shippmentReceiverKey) {
+        if (bottomLoader.isShowing()) {
+          bottomLoader.close();
+        }
+
+        return;
+      }
+    }
+
     if (!_isOnlineSelected && !_isCashSelected) {
-      showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: Text("Внимание!"),
-          content: Text("Нужно обязательно выбрать способ оплаты!"),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text("Окей"),
-            ),
-          ],
-        ),
-      );
+      Fluttertoast.showToast(msg: "Нужно обязательно выбрать способ оплаты!");
+      return;
+    }
+
+    if (selectedDate == null) {
+      Fluttertoast.showToast(msg: "Пожалуйста, выберите дату");
       return;
     }
 
@@ -1070,14 +1226,30 @@ class _OneClickScreenState extends State<OneClickScreen> {
       bottomLoader.display();
     }
 
-    /*
-    await 
+    var localDateTime = new LocalDateTime.dateTime(selectedDate.toLocal());
+    Map<String, dynamic> reqBody = {
+      "productId": widget.productInfo["id"],
+      "receiverName":
+          Utils.fromUTF8(_receiverNameTextController.text.toString()),
+      "receiverSurname":
+          Utils.fromUTF8(_receiverSurnameTextController.text.toString()),
+      "receiverPhone": _receiverPhoneTextController.text.toString(),
+      "receiverEmail": _receiverEmailTextController.text.toString(),
+      "receiverStreet":
+          _isCourierSelected ? _streetTextController.text.toString() : "",
+      "receiverHouseNum":
+          _isCourierSelected ? _houseNumTextController.text.toString() : "",
+      "receiverApartmentNum":
+          _isCourierSelected ? _roomTextController.text.toString() : "",
+      "deliveryComment":
+          _isCourierSelected ? _commentTextController.text.toString() : "",
+      "deliveryMethod": _isCourierSelected ? "courier" : "pickup",
+      "paymentMethod": _isCashSelected ? "cash" : "online",
+      "deliveryDate": OffsetDateTime(localDateTime, Offset(3)).toString(),
+      "parameters": widget.productSelectedParams,
+    };
 
-    await CartController.updatePaymentInfo(_isCashSelected ? "cash" : "online");
-    await CartController.increaseCartStatus();
-    await CartController.createOrder();
-    await Utils.getAllCartInfo();
-    */
+    await ProductController.createOneClickOrder(reqBody);
 
     if (bottomLoader.isShowing()) {
       bottomLoader.close();
@@ -1091,20 +1263,15 @@ class _OneClickScreenState extends State<OneClickScreen> {
   }
 
   Widget _getBodyWidget(BuildContext context) {
-    if (productInfo == null) {
-      return Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
     bottomLoader = getBottomLoader(context);
     MediaQueryData mediaQuery = MediaQuery.of(context);
 
     if (SecureStorage.isLogged) {
-      _receiverNameTextController.text = SecureStorage.name;
+      _receiverNameTextController.text = Utils.fromUTF8(SecureStorage.name);
       _receiverEmailTextController.text = SecureStorage.email;
       _receiverPhoneTextController.text = SecureStorage.phone;
-      _receiverSurnameTextController.text = SecureStorage.surname;
+      _receiverSurnameTextController.text =
+          Utils.fromUTF8(SecureStorage.surname);
     }
 
     return SingleChildScrollView(
@@ -1152,7 +1319,7 @@ class _OneClickScreenState extends State<OneClickScreen> {
               height: 20.0,
             ),
             GestureDetector(
-              onTap: () {},
+              onTap: () => _onConfirmButtonPressed(context),
               child: Center(
                 child: Container(
                   height: 50,

@@ -358,4 +358,29 @@ class ProductController {
 
     return json.decode(response.body);
   }
+
+  static Future<bool> createOneClickOrder(orderForm) async {
+    String url =
+        HttpConstants.SERVER_HOST + HttpConstants.PRODUCT_PATH + "/one-click";
+
+    dynamic headers = HttpConstants.DEFAULT_REQUEST_HEADERS;
+    if (SecureStorage.isLogged) {
+      headers["Authorization"] =
+          "${SecureStorage.tokenType} ${SecureStorage.token}";
+    }
+
+    final response = await http.post(
+      url,
+      body: json.encode(orderForm),
+      headers: headers,
+    );
+
+    if (response.statusCode != 200) {
+      lastErrorMsg =
+          "Cannot create one click order with product id ${orderForm["productId"]}";
+      return false;
+    }
+
+    return true;
+  }
 }
