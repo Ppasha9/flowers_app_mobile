@@ -79,7 +79,7 @@ class _ProductsByNameScreenState extends State<ProductsByNameScreen> {
       child: ListView.builder(
         scrollDirection: Axis.vertical,
         itemCount: (currProducts.length / 2).round(),
-        itemBuilder: (_, index) => ProductByCategoryScreenComponent(
+        itemBuilder: (_, index) => ProductsRowInGridComponent(
           leftPrJson: currProducts[2 * index],
           rightPrJson: (2 * index + 1 < currProducts.length)
               ? currProducts[2 * index + 1]

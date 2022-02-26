@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:orlove_app/http/compilation_controller.dart';
+import 'package:orlove_app/screens/compilation/compilation_screen.dart';
 import 'package:provider/provider.dart';
 
 import 'package:orlove_app/languages/language_constants.dart';
@@ -326,7 +327,7 @@ class NewProductsListWidget extends StatelessWidget {
 }
 
 class CompilationListElementWidget extends StatelessWidget {
-  final CompilationCuttedFormDRO compilationCuttedInfo;
+  final CompilationCuttedFormDTO compilationCuttedInfo;
 
   const CompilationListElementWidget({@required this.compilationCuttedInfo});
 
@@ -337,7 +338,15 @@ class CompilationListElementWidget extends StatelessWidget {
     print(compilationCuttedInfo.picUrl);
 
     return GestureDetector(
-      onTap: () {},
+      onTap: () {
+        Navigator.of(context).push(
+          CupertinoPageRoute(
+            builder: (_) => CompilationScreen(
+              id: compilationCuttedInfo.id,
+            ),
+          ),
+        );
+      },
       child: Container(
         height: mediaQuery.size.height / 4.5,
         width: mediaQuery.size.width / 2.3,
@@ -376,7 +385,7 @@ class CompilationListElementWidget extends StatelessWidget {
 }
 
 class CompilationsListWidget extends StatelessWidget {
-  final List<CompilationCuttedFormDRO> compilations;
+  final List<CompilationCuttedFormDTO> compilations;
 
   const CompilationsListWidget({@required this.compilations});
 

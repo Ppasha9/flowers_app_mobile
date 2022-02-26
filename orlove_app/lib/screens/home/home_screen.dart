@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:orlove_app/constants.dart';
 import 'package:orlove_app/http/compilation_controller.dart';
 import 'package:orlove_app/http/product_controller.dart';
+import 'package:orlove_app/screens/compilation/all_compilations_screen.dart';
 import 'package:orlove_app/screens/components/app_bar.dart';
 import 'package:orlove_app/screens/components/bottom_navigation_bar.dart';
 import 'package:orlove_app/screens/components/social_icons.dart';
@@ -22,7 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<dynamic> productsPerCategory;
   dynamic dayProduct;
   List<dynamic> newProducts;
-  List<CompilationCuttedFormDRO> compilations;
+  List<CompilationCuttedFormDTO> compilations;
 
   Future<dynamic> _loadProductsPerCategory() async {
     return await ProductController.getProductPerCategory();
@@ -36,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return await ProductController.getProductsForCategory(category: "New");
   }
 
-  Future<List<CompilationCuttedFormDRO>> _loadCompilations() async {
+  Future<List<CompilationCuttedFormDTO>> _loadCompilations() async {
     return await CompilationController.getAllCompilationsCuttedForms();
   }
 
@@ -172,7 +173,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     right: 20.0,
                   ),
                   child: GestureDetector(
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.of(context).push(
+                        CupertinoPageRoute(
+                          builder: (_) => AllCompilationsScreen(),
+                        ),
+                      );
+                    },
                     child: Row(
                       children: [
                         Text(

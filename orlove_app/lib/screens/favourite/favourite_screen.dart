@@ -71,7 +71,7 @@ class _FavouriteScreenState extends State<FavouriteScreen> {
       child: ListView.builder(
         scrollDirection: Axis.vertical,
         itemCount: (products.length / 2).round(),
-        itemBuilder: (_, index) => ProductByCategoryScreenComponent(
+        itemBuilder: (_, index) => ProductsRowInGridComponent(
           leftPrJson: products[2 * index],
           rightPrJson: (2 * index + 1 < products.length)
               ? products[2 * index + 1]

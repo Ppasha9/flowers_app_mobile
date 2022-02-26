@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:orlove_app/screens/components/product_element_widget.dart';
 
-class ProductByCategoryScreenComponent extends StatelessWidget {
+class ProductsRowInGridComponent extends StatelessWidget {
   final dynamic leftPrJson;
   final dynamic rightPrJson;
 
-  const ProductByCategoryScreenComponent({
+  const ProductsRowInGridComponent({
     this.leftPrJson,
     this.rightPrJson: null,
   });

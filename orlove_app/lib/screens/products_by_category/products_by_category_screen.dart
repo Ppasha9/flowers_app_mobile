@@ -270,7 +270,7 @@ class _ProductsByCategoryScreenState extends State<ProductsByCategoryScreen> {
         controller: scrollController,
         scrollDirection: Axis.vertical,
         itemCount: (productsToShow.length / 2).round(),
-        itemBuilder: (_, index) => ProductByCategoryScreenComponent(
+        itemBuilder: (_, index) => ProductsRowInGridComponent(
           leftPrJson: productsToShow[2 * index],
           rightPrJson: (2 * index + 1 < productsToShow.length)
               ? productsToShow[2 * index + 1]
